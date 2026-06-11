@@ -35,6 +35,11 @@ const CourseDetailScreen = () => {
     course.lessons[0];
   const locked = isCourseLocked(course, completedLessons);
   const isFavorite = favoriteCourses.includes(course.id);
+  const isLessonLocked = (lesson, index) =>
+    locked ||
+    (!completedLessons.includes(lesson.id) &&
+      index > 0 &&
+      !completedLessons.includes(course.lessons[index - 1].id));
 
   return (
     <div className="space-y-6 pb-2 pt-12">
@@ -143,7 +148,7 @@ const CourseDetailScreen = () => {
               completed={completedLessons.includes(lesson.id)}
               index={index}
               lesson={lesson}
-              locked={locked}
+              locked={isLessonLocked(lesson, index)}
             />
           ))}
         </section>
