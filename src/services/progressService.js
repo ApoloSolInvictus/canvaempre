@@ -152,7 +152,10 @@ export const fetchUserProfile = async (user) => {
     const snapshot = await getDoc(userRef);
 
     if (!snapshot.exists()) {
-      const profile = normalizeProfile(user, localProfile);
+      const profile = normalizeProfile(user, {
+        ...localProfile,
+        syncPending: false,
+      });
       await setDoc(userRef, {
         ...profile,
         createdAt: serverTimestamp(),
@@ -162,7 +165,10 @@ export const fetchUserProfile = async (user) => {
     }
 
     const remoteProfile = normalizeProfile(user, snapshot.data());
-    const profile = mergeProfiles(user, remoteProfile, localProfile);
+    const profile = {
+      ...mergeProfiles(user, remoteProfile, localProfile),
+      syncPending: false,
+    };
     await setDoc(
       userRef,
       {
