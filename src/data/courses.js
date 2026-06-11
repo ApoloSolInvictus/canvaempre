@@ -133,6 +133,229 @@ const courseBlueprints = [
   },
 ];
 
+const resourceCatalog = {
+  'nivel-0-introduccion-canva': [
+    {
+      type: 'Checklist',
+      title: 'Checklist para abrir tu cuenta de Canva',
+      description:
+        'Lista rápida para dejar tu espacio de trabajo listo antes de comenzar a diseñar.',
+      items: [
+        'Crear o confirmar acceso a tu cuenta.',
+        'Configurar nombre, idioma y uso principal.',
+        'Crear carpetas para marca, prácticas y diseños finales.',
+        'Subir logo, fotos o referencias iniciales si ya las tienes.',
+      ],
+      useCase:
+        'Úsalo antes de la primera práctica para evitar perder tiempo buscando archivos o configuraciones.',
+    },
+    {
+      type: 'Guía',
+      title: 'Guía rápida de exportación para redes sociales',
+      description:
+        'Referencia simple para saber cuándo descargar PNG, JPG o PDF según el destino.',
+      items: [
+        'PNG para publicaciones con buena calidad visual.',
+        'JPG para imágenes ligeras y rápidas de compartir.',
+        'PDF para propuestas, catálogos o documentos.',
+        'Nombre recomendado: marca-pieza-fecha-version.',
+      ],
+      useCase:
+        'Consúltalo cada vez que termines una pieza y necesites elegir el formato correcto.',
+    },
+    {
+      type: 'Plantilla',
+      title: 'Plantilla de primera publicación',
+      description:
+        'Estructura base para crear una publicación clara con título, beneficio y llamado a la acción.',
+      items: [
+        'Título principal de máximo 8 palabras.',
+        'Subtítulo con beneficio concreto.',
+        'Imagen o elemento visual de apoyo.',
+        'Llamado a la acción como Escríbenos, Compra hoy o Reserva.',
+      ],
+      useCase:
+        'Úsala como base para tu mini proyecto de publicación básica.',
+    },
+  ],
+  'nivel-1-fundamentos-diseno': [
+    {
+      type: 'Mapa visual',
+      title: 'Mapa de jerarquía visual',
+      description:
+        'Guía para ordenar texto, imagen y acción según importancia.',
+      items: [
+        'Primero: mensaje principal o promesa.',
+        'Segundo: beneficio o explicación corta.',
+        'Tercero: prueba, dato o detalle.',
+        'Final: llamado a la acción visible.',
+      ],
+      useCase:
+        'Revísalo antes de diseñar para decidir qué debe verse primero.',
+    },
+    {
+      type: 'Checklist',
+      title: 'Lista de errores comunes de diseño',
+      description:
+        'Control de calidad para evitar piezas recargadas o difíciles de leer.',
+      items: [
+        'Demasiadas tipografías en una sola pieza.',
+        'Texto sin contraste suficiente.',
+        'Elementos decorativos que no ayudan al mensaje.',
+        'Márgenes inconsistentes o alineaciones descuidadas.',
+      ],
+      useCase:
+        'Pásalo por cada diseño antes de exportarlo o publicarlo.',
+    },
+    {
+      type: 'Plantilla',
+      title: 'Plantilla de revisión antes de publicar',
+      description:
+        'Mini rutina para evaluar claridad, legibilidad, equilibrio y coherencia.',
+      items: [
+        '¿Se entiende el mensaje en 3 segundos?',
+        '¿El texto se lee bien en móvil?',
+        '¿La pieza respeta colores y estilo?',
+        '¿La acción final está clara?',
+      ],
+      useCase:
+        'Úsala al cerrar el mini proyecto de pieza visual limpia.',
+    },
+  ],
+  'nivel-2-publicaciones-conectan': [
+    {
+      type: 'Calendario',
+      title: 'Calendario simple de contenido',
+      description:
+        'Estructura semanal para mezclar publicaciones educativas, promocionales y de confianza.',
+      items: [
+        'Lunes: tip educativo o problema común.',
+        'Miércoles: beneficio de producto o servicio.',
+        'Viernes: prueba social, historia o resultado.',
+        'Domingo: idea ligera, inspiración o recordatorio.',
+      ],
+      useCase:
+        'Úsalo para planificar una semana de publicaciones sin improvisar.',
+    },
+    {
+      type: 'Banco de ideas',
+      title: 'Banco de ideas para emprendedores',
+      description:
+        'Prompts listos para convertir conocimientos de tu negocio en contenido.',
+      items: [
+        '3 errores que tu cliente debe evitar.',
+        'Antes y después de usar tu producto o servicio.',
+        'Preguntas frecuentes respondidas en una publicación.',
+        'Beneficio principal explicado con un ejemplo real.',
+      ],
+      useCase:
+        'Elige una idea y conviértela en la publicación final del módulo.',
+    },
+    {
+      type: 'Checklist',
+      title: 'Checklist de publicación final',
+      description:
+        'Revisión final para asegurar que la pieza conecta y está lista para salir.',
+      items: [
+        'Objetivo definido: educar, vender, anunciar o inspirar.',
+        'Texto breve y claro.',
+        'Diseño con jerarquía y contraste.',
+        'Copy de publicación preparado.',
+      ],
+      useCase:
+        'Úsalo antes de compartir o programar tu publicación.',
+    },
+  ],
+  'nivel-3-branding-emprendedores': [
+    {
+      type: 'Ficha',
+      title: 'Ficha de personalidad de marca',
+      description:
+        'Documento base para definir cómo quieres que se sienta y se vea tu marca.',
+      items: [
+        'Tres palabras que describen tu marca.',
+        'Público principal al que le hablas.',
+        'Emoción que quieres provocar.',
+        'Tono visual: moderno, cálido, premium, alegre o minimalista.',
+      ],
+      useCase:
+        'Complétala antes de elegir colores, tipografías o estilo visual.',
+    },
+    {
+      type: 'Guía',
+      title: 'Guía de paletas por rubro',
+      description:
+        'Referencia para elegir colores según tipo de negocio y emoción deseada.',
+      items: [
+        'Bienestar: verdes, neutros y tonos suaves.',
+        'Belleza: rosados, beige, negro o dorado moderado.',
+        'Tecnología: azules, violetas y grises limpios.',
+        'Alimentos: tonos cálidos, naturales y alto contraste.',
+      ],
+      useCase:
+        'Úsala como punto de partida para construir tu paleta de marca.',
+    },
+    {
+      type: 'Manual',
+      title: 'Mini manual de identidad visual',
+      description:
+        'Estructura de una página para documentar logo, colores, fuentes y estilo.',
+      items: [
+        'Logo o marca textual principal.',
+        'Paleta con color principal, secundario y neutros.',
+        'Tipografías para títulos y textos.',
+        'Ejemplo de publicación aplicando la identidad.',
+      ],
+      useCase:
+        'Conviértelo en el entregable final del módulo de branding.',
+    },
+  ],
+  'nivel-4-mockups-presentaciones': [
+    {
+      type: 'Storyboard',
+      title: 'Storyboard de presentación comercial',
+      description:
+        'Orden recomendado para construir una presentación clara y persuasiva.',
+      items: [
+        'Portada con promesa principal.',
+        'Problema o necesidad del cliente.',
+        'Solución, beneficios y prueba visual.',
+        'Oferta, precio o siguiente paso.',
+      ],
+      useCase:
+        'Úsalo para armar una presentación de 5 a 7 slides.',
+    },
+    {
+      type: 'Guía',
+      title: 'Guía de mockups para productos y servicios',
+      description:
+        'Criterios para elegir mockups que eleven la percepción profesional de tu marca.',
+      items: [
+        'Producto físico: empaque, etiqueta o escena real.',
+        'Servicio: pantalla, documento, agenda o presentación.',
+        'Mantener fondo limpio y coherente con la marca.',
+        'Evitar mockups que compitan con el diseño principal.',
+      ],
+      useCase:
+        'Úsala para escoger el mockup correcto en tu proyecto final.',
+    },
+    {
+      type: 'Checklist',
+      title: 'Checklist de exportación final',
+      description:
+        'Revisión de archivos antes de compartir una presentación, catálogo o mockup.',
+      items: [
+        'Ortografía, datos de contacto y enlaces revisados.',
+        'PDF exportado para presentación o envío.',
+        'PNG/JPG preparado para redes sociales.',
+        'Archivos nombrados con marca, pieza y fecha.',
+      ],
+      useCase:
+        'Pásalo al terminar el proyecto final para entregar con seguridad.',
+    },
+  ],
+};
+
 const lessonGuides = {
   'Qué es Canva y para qué sirve': {
     summary:
@@ -554,6 +777,16 @@ const buildFallbackGuide = (course, title, index) => ({
   assignment: 'Guarda tu avance con nombre claro para retomarlo en la próxima clase.',
 });
 
+const buildCourseResources = (course) =>
+  resourceCatalog[course.id] ??
+  course.resources.map((title) => ({
+    type: 'Recurso',
+    title,
+    description: 'Material de apoyo para aplicar durante la clase virtual.',
+    items: ['Revisa el material.', 'Aplícalo en una pieza real.', 'Guarda tu avance.'],
+    useCase: 'Úsalo como apoyo práctico del módulo.',
+  }));
+
 export const courses = courseBlueprints.map((course) => {
   const lessons = course.lessons.map((title, lessonIndex) => {
     const guide = lessonGuides[title] ?? buildFallbackGuide(course, title, lessonIndex);
@@ -581,6 +814,7 @@ export const courses = courseBlueprints.map((course) => {
 
   return {
     ...course,
+    resources: buildCourseResources(course),
     lessons,
     lessonsCount: lessons.length,
     image: `${course.id}-mockup`,

@@ -1,5 +1,6 @@
 import {
   BookOpen,
+  CheckCircle2,
   ChevronLeft,
   Clock3,
   Heart,
@@ -156,14 +157,41 @@ const CourseDetailScreen = () => {
         <section className="space-y-3 px-8">
           {course.resources.map((resource) => (
             <div
-              key={resource}
-              className="rounded-[1.25rem] border border-gray-200 bg-white p-4 text-sm font-bold text-ink"
+              key={resource.title}
+              className="rounded-[1.35rem] border border-gray-200 bg-white p-5 text-ink"
             >
-              <BookOpen className="mb-3 h-5 w-5 text-violet" />
-              {resource}
-              <p className="mt-2 text-xs font-semibold leading-relaxed text-muted">
-                Material de apoyo para aplicar durante la clase virtual.
+              <div className="flex items-start gap-3">
+                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-violet/10 text-violet">
+                  <BookOpen className="h-5 w-5" />
+                </span>
+                <div className="min-w-0">
+                  <p className="text-xs font-black uppercase tracking-[0.18em] text-violet">
+                    {resource.type}
+                  </p>
+                  <h3 className="mt-1 text-lg font-black leading-tight text-ink">
+                    {resource.title}
+                  </h3>
+                </div>
+              </div>
+              <p className="mt-4 text-sm font-medium leading-relaxed text-muted">
+                {resource.description}
               </p>
+              <ul className="mt-4 space-y-2.5">
+                {resource.items.map((item) => (
+                  <li key={item} className="flex gap-2.5 text-sm font-semibold leading-relaxed text-ink">
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-5 rounded-2xl bg-violet/5 p-4">
+                <p className="text-xs font-black uppercase tracking-[0.16em] text-violet">
+                  Cómo usarlo
+                </p>
+                <p className="mt-2 text-sm font-medium leading-relaxed text-ink">
+                  {resource.useCase}
+                </p>
+              </div>
             </div>
           ))}
         </section>
