@@ -1,0 +1,73 @@
+import { Award, BookCheck, LogOut, ShieldCheck, UserRound } from 'lucide-react';
+import Header from '../components/Header';
+import PrimaryButton from '../components/PrimaryButton';
+import ProgressBar from '../components/ProgressBar';
+import { useAuth } from '../context/AuthContext';
+import { useProgress } from '../context/ProgressContext';
+
+const ProfileScreen = () => {
+  const { logout, isFirebaseConfigured } = useAuth();
+  const { profile, stats } = useProgress();
+
+  return (
+    <div className="space-y-5">
+      <Header subtitle="Tu avance y certificaciones" title="Perfil" />
+
+      <section className="mx-5 rounded-[2rem] bg-gradient-to-br from-indigo-600 to-violet-600 p-5 text-white shadow-soft">
+        <div className="flex items-center gap-4">
+          <div className="grid h-16 w-16 place-items-center rounded-3xl bg-white/15">
+            <UserRound className="h-8 w-8" />
+          </div>
+          <div className="min-w-0">
+            <h2 className="truncate text-2xl font-black">
+              {profile?.name ?? 'Emprendedor'}
+            </h2>
+            <p className="mt-1 text-sm font-semibold text-white/75">
+              Nivel actual {stats.currentLevel}
+            </p>
+          </div>
+        </div>
+        <div className="mt-6 rounded-3xl bg-white/15 p-4">
+          <ProgressBar label="Progreso total" value={stats.totalProgress} />
+        </div>
+      </section>
+
+      <section className="grid grid-cols-2 gap-3 px-5">
+        <div className="rounded-3xl border border-gray-100 bg-white p-4 shadow-sm">
+          <Award className="h-6 w-6 text-violet" />
+          <p className="mt-4 text-2xl font-black text-ink">
+            {stats.certificatesUnlocked}
+          </p>
+          <p className="text-xs font-bold text-muted">Certificados</p>
+        </div>
+        <div className="rounded-3xl border border-gray-100 bg-white p-4 shadow-sm">
+          <BookCheck className="h-6 w-6 text-emerald-500" />
+          <p className="mt-4 text-2xl font-black text-ink">
+            {stats.completedClasses}
+          </p>
+          <p className="text-xs font-bold text-muted">Clases completadas</p>
+        </div>
+      </section>
+
+      <section className="space-y-3 px-5">
+        <div className="flex items-center gap-3 rounded-3xl border border-gray-100 bg-white p-4 shadow-sm">
+          <ShieldCheck className="h-5 w-5 text-violet" />
+          <div>
+            <p className="text-sm font-bold text-ink">Estado de datos</p>
+            <p className="text-xs font-semibold text-muted">
+              {isFirebaseConfigured
+                ? 'Firebase Authentication y Firestore activos'
+                : 'Modo demo local activo'}
+            </p>
+          </div>
+        </div>
+        <PrimaryButton variant="secondary" onClick={logout}>
+          <LogOut className="h-4 w-4" />
+          Cerrar sesion
+        </PrimaryButton>
+      </section>
+    </div>
+  );
+};
+
+export default ProfileScreen;
