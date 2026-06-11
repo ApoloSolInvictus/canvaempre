@@ -79,3 +79,31 @@ input {
 .soft-divider {
   background: linear-gradient(90deg, #5b42ff 0 12%, #e9ebf3 12% 100%);
 }
+
+@media print {
+  body {
+    background: #ffffff !important;
+  }
+
+  nav,
+  .certificate-actions {
+    display: none !important;
+  }
+
+  .phone-shell {
+    max-width: none;
+    min-height: auto;
+    box-shadow: none;
+  }
+
+  .safe-bottom {
+    padding-bottom: 0;
+  }
+
+  .certificate-paper {
+    border: 1px solid #e5e7eb;
+    box-shadow: none;
+    min-height: 100vh;
+    page-break-inside: avoid;
+  }
+}

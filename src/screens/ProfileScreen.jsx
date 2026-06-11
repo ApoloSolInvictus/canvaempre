@@ -1,4 +1,12 @@
-import { Award, BookCheck, LogOut, ShieldCheck, UserRound } from 'lucide-react';
+import {
+  Award,
+  BookCheck,
+  FileBadge2,
+  LogOut,
+  ShieldCheck,
+  UserRound,
+} from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import PrimaryButton from '../components/PrimaryButton';
 import ProgressBar from '../components/ProgressBar';
@@ -6,8 +14,10 @@ import { useAuth } from '../context/AuthContext';
 import { useProgress } from '../context/ProgressContext';
 
 const ProfileScreen = () => {
+  const navigate = useNavigate();
   const { logout, isFirebaseConfigured } = useAuth();
   const { profile, stats } = useProgress();
+  const certificateReady = stats.totalProgress === 100 || Boolean(profile?.certificateNumber);
 
   return (
     <div className="space-y-5">
@@ -50,6 +60,31 @@ const ProfileScreen = () => {
       </section>
 
       <section className="space-y-3 px-5">
+        <div className="rounded-3xl border border-gray-100 bg-white p-4 shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="grid h-12 w-12 place-items-center rounded-2xl bg-violet/10 text-violet">
+              <FileBadge2 className="h-6 w-6" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-bold text-ink">
+                Certificado Digital W Studio
+              </p>
+              <p className="text-xs font-semibold text-muted">
+                {certificateReady
+                  ? 'Disponible para guardar como PDF'
+                  : `Pendiente: ${stats.totalProgress}% completado`}
+              </p>
+            </div>
+          </div>
+          <PrimaryButton
+            className="mt-4"
+            variant={certificateReady ? 'primary' : 'secondary'}
+            onClick={() => navigate('/app/certificado')}
+          >
+            <FileBadge2 className="h-5 w-5" />
+            {certificateReady ? 'Ver certificado' : 'Ver progreso del certificado'}
+          </PrimaryButton>
+        </div>
         <div className="flex items-center gap-3 rounded-3xl border border-gray-100 bg-white p-4 shadow-sm">
           <ShieldCheck className="h-5 w-5 text-violet" />
           <div>

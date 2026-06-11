@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import AppLayout from './components/AppLayout';
 import ProtectedRoute from './components/ProtectedRoute';
+import CertificateScreen from './screens/CertificateScreen';
 import CourseDetailScreen from './screens/CourseDetailScreen';
 import ExploreScreen from './screens/ExploreScreen';
 import FavoritesScreen from './screens/FavoritesScreen';
@@ -28,6 +29,7 @@ const App = () => (
       <Route path="mis-clases" element={<MyClassesScreen />} />
       <Route path="favoritos" element={<FavoritesScreen />} />
       <Route path="perfil" element={<ProfileScreen />} />
+      <Route path="certificado" element={<CertificateScreen />} />
       <Route path="curso/:courseId" element={<CourseDetailScreen />} />
       <Route path="leccion/:lessonId" element={<LessonScreen />} />
     </Route>

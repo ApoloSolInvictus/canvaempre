@@ -15,6 +15,41 @@ const toArray = (value) => (Array.isArray(value) ? value : []);
 
 const uniqueValues = (...lists) => [...new Set(lists.flatMap((list) => toArray(list)))];
 
+const compactId = (value = '') =>
+  value
+    .replace(/[^a-zA-Z0-9]/g, '')
+    .slice(0, 8)
+    .toUpperCase()
+    .padEnd(8, '0');
+
+const formatCertificateDate = (isoDate) =>
+  new Intl.DateTimeFormat('es-CR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  }).format(new Date(isoDate));
+
+const buildCertificateNumber = (uid, issuedAt) => {
+  const datePart = formatCertificateDate(issuedAt).replaceAll('/', '');
+  return `WST-CPE-${datePart}-${compactId(uid)}`;
+};
+
+const applyCertificateMetadata = (profile, stats) => {
+  if (stats.totalProgress < 100) return profile;
+
+  const certificateIssuedAt =
+    profile.certificateIssuedAt ?? new Date().toISOString();
+
+  return {
+    ...profile,
+    certificateIssuedAt,
+    certificateNumber:
+      profile.certificateNumber ??
+      buildCertificateNumber(profile.uid, certificateIssuedAt),
+    certificateTitle: 'Canva para Emprendedores',
+  };
+};
+
 export const calculateCourseProgress = (course, completedLessons = []) => {
   const completedSet = new Set(completedLessons);
   const completedCount = course.lessons.filter((lesson) =>
@@ -99,14 +134,14 @@ const normalizeProfile = (user, data = {}) => {
   const favoriteCourses = toArray(data.favoriteCourses);
   const stats = calculateProfileStats(completedLessons);
 
-  return {
+  return applyCertificateMetadata({
     ...baseProfile(user),
     ...data,
     completedLessons,
     favoriteCourses,
     currentLevel: stats.currentLevel,
     totalProgress: stats.totalProgress,
-  };
+  }, stats);
 };
 
 const readLocalProfile = (user) => {
@@ -178,6 +213,9 @@ export const fetchUserProfile = async (user) => {
         favoriteCourses: profile.favoriteCourses,
         currentLevel: profile.currentLevel,
         totalProgress: profile.totalProgress,
+        certificateIssuedAt: profile.certificateIssuedAt ?? null,
+        certificateNumber: profile.certificateNumber ?? null,
+        certificateTitle: profile.certificateTitle ?? null,
         updatedAt: serverTimestamp(),
       },
       { merge: true },
@@ -203,9 +241,10 @@ export const completeLesson = async (user, lessonId) => {
     currentLevel: stats.currentLevel,
     totalProgress: stats.totalProgress,
   };
+  const certifiedProfile = applyCertificateMetadata(nextProfile, stats);
 
   if (!isFirebaseConfigured || !db || profile.syncPending) {
-    return writeLocalProfile(nextProfile);
+    return writeLocalProfile(certifiedProfile);
   }
 
   try {
@@ -215,6 +254,9 @@ export const completeLesson = async (user, lessonId) => {
         completedLessons: arrayUnion(lessonId),
         currentLevel: stats.currentLevel,
         totalProgress: stats.totalProgress,
+        certificateIssuedAt: certifiedProfile.certificateIssuedAt ?? null,
+        certificateNumber: certifiedProfile.certificateNumber ?? null,
+        certificateTitle: certifiedProfile.certificateTitle ?? null,
         syncPending: false,
         updatedAt: serverTimestamp(),
       },
@@ -222,16 +264,25 @@ export const completeLesson = async (user, lessonId) => {
     );
   } catch {
     return writeLocalProfile({
-      ...nextProfile,
+      ...certifiedProfile,
       syncPending: true,
     });
   }
 
   return writeLocalProfile({
-    ...nextProfile,
+    ...certifiedProfile,
     syncPending: false,
   });
 };
+
+export const getCertificateDisplayDate = (profile) =>
+  profile?.certificateIssuedAt
+    ? new Intl.DateTimeFormat('es-CR', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+      }).format(new Date(profile.certificateIssuedAt))
+    : '';
 
 export const toggleFavoriteCourse = async (user, courseId) => {
   const profile = await fetchUserProfile(user);
