@@ -11,7 +11,7 @@ const PrimaryButton = ({
 }) => {
   const variants = {
     primary:
-      'bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-soft active:scale-[0.99]',
+      'bg-[linear-gradient(90deg,#5B3DF4_0%,#7B2DFF_100%)] text-white shadow-soft active:scale-[0.99]',
     secondary:
       'bg-white text-ink ring-1 ring-gray-200 shadow-sm active:scale-[0.99]',
     ghost: 'bg-transparent text-violet hover:bg-violet/5',
@@ -21,7 +21,7 @@ const PrimaryButton = ({
     <button
       type={type}
       className={cn(
-        'inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-3xl px-5 py-3 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-55',
+        'inline-flex min-h-[58px] w-full items-center justify-center gap-3 rounded-[1.35rem] px-5 py-4 text-lg font-bold transition disabled:cursor-not-allowed disabled:opacity-55',
         variants[variant],
         className,
       )}

@@ -1,15 +1,21 @@
-import { BookOpen, CheckCircle2, Clock3, Heart, Lock } from 'lucide-react';
+import {
+  BookOpen,
+  ChevronLeft,
+  Clock3,
+  Heart,
+  List,
+  Lock,
+  Play,
+  Share2,
+} from 'lucide-react';
 import { useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
-import Header from '../components/Header';
 import LessonItem from '../components/LessonItem';
 import MockupVisual from '../components/MockupVisual';
 import PrimaryButton from '../components/PrimaryButton';
-import ProgressBar from '../components/ProgressBar';
 import { useProgress } from '../context/ProgressContext';
 import { getCourseById } from '../data/courses';
 import {
-  calculateCourseProgress,
   isCourseLocked,
 } from '../services/progressService';
 
@@ -28,93 +34,109 @@ const CourseDetailScreen = () => {
     course.lessons.find((lesson) => !completedLessons.includes(lesson.id)) ??
     course.lessons[0];
   const locked = isCourseLocked(course, completedLessons);
-  const progress = calculateCourseProgress(course, completedLessons);
   const isFavorite = favoriteCourses.includes(course.id);
 
   return (
-    <div className="space-y-5">
-      <Header
-        action={
+    <div className="space-y-6 pb-2 pt-12">
+      <header className="flex items-center justify-between px-8">
+        <button
+          aria-label="Volver"
+          className="grid h-11 w-11 place-items-center rounded-full bg-white text-ink"
+          type="button"
+          onClick={() => navigate(-1)}
+        >
+          <ChevronLeft className="h-8 w-8" strokeWidth={2.1} />
+        </button>
+        <div className="flex items-center gap-4">
           <button
             aria-label={isFavorite ? 'Quitar favorito' : 'Guardar favorito'}
-            className="grid h-10 w-10 place-items-center rounded-full bg-gray-100 text-violet"
+            className="grid h-11 w-11 place-items-center rounded-full bg-white text-ink"
             type="button"
             onClick={() => toggleFavorite(course.id)}
           >
-            <Heart className={`h-5 w-5 ${isFavorite ? 'fill-violet' : ''}`} />
+            <Heart className={`h-8 w-8 ${isFavorite ? 'fill-violet text-violet' : ''}`} strokeWidth={2.1} />
           </button>
-        }
-        showBack
-        subtitle={`Nivel ${course.level} | ${course.duration}`}
-        title={course.title}
-      />
+          <button
+            aria-label="Compartir"
+            className="grid h-11 w-11 place-items-center rounded-full bg-white text-ink"
+            type="button"
+          >
+            <Share2 className="h-8 w-8" strokeWidth={2.1} />
+          </button>
+        </div>
+      </header>
 
-      <section className="px-5">
+      <section className="space-y-5 px-8">
+        <span className="inline-flex rounded-full bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2 text-sm font-black uppercase text-white shadow-[0_12px_28px_rgba(109,53,255,0.24)]">
+          Nivel {course.level}
+        </span>
+        <h1 className="text-[2.55rem] font-black leading-[1.06] text-ink">
+          {course.title}
+        </h1>
+        <div className="flex items-center gap-8 text-lg font-medium text-muted">
+          <span className="inline-flex items-center gap-2">
+            <Clock3 className="h-6 w-6" strokeWidth={2.1} />
+            {course.duration}
+          </span>
+          <span className="inline-flex items-center gap-2">
+            <List className="h-6 w-6" strokeWidth={2.1} />
+            {course.lessonsCount} lecciones
+          </span>
+        </div>
+        <p className="text-lg font-medium leading-relaxed text-ink">
+          {course.description}
+        </p>
         <MockupVisual gradient={course.gradient} />
       </section>
 
-      <section className="space-y-4 px-5">
-        <div className="flex flex-wrap gap-2">
-          <span className="inline-flex items-center gap-1 rounded-full bg-violet/10 px-3 py-2 text-xs font-bold text-violet">
-            <Clock3 className="h-3.5 w-3.5" />
-            {course.duration}
-          </span>
-          <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-3 py-2 text-xs font-bold text-muted">
-            <BookOpen className="h-3.5 w-3.5" />
-            {course.lessonsCount} lecciones
-          </span>
-          {locked ? (
-            <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-3 py-2 text-xs font-bold text-muted">
-              <Lock className="h-3.5 w-3.5" />
-              Bloqueado
-            </span>
-          ) : (
-            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-600">
-              <CheckCircle2 className="h-3.5 w-3.5" />
-              Disponible
-            </span>
-          )}
-        </div>
-
-        <p className="text-sm font-semibold leading-relaxed text-muted">
-          {course.description}
-        </p>
-
-        <ProgressBar label="Avance del curso" value={progress} />
-
+      <section className="px-8">
         <PrimaryButton
           disabled={locked}
           onClick={() => navigate(`/app/leccion/${firstLesson.id}`)}
         >
-          {locked ? 'Completa el nivel anterior' : 'Comenzar clase'}
+          {locked ? (
+            <>
+              <Lock className="h-5 w-5" />
+              Completa el nivel anterior
+            </>
+          ) : (
+            <>
+              <span className="grid h-8 w-8 place-items-center rounded-full bg-white text-violet">
+                <Play className="h-4 w-4 fill-violet" />
+              </span>
+              Comenzar clase
+            </>
+          )}
         </PrimaryButton>
       </section>
 
-      <section className="px-5">
-        <div className="grid grid-cols-2 rounded-3xl bg-gray-100 p-1">
+      <section className="border-b border-gray-200">
+        <div className="grid grid-cols-2">
           <button
-            className={`rounded-[1.25rem] px-4 py-3 text-sm font-bold transition ${
-              tab === 'lessons' ? 'bg-white text-ink shadow-sm' : 'text-muted'
+            className={`relative px-4 py-4 text-lg font-black transition ${
+              tab === 'lessons' ? 'text-violet' : 'text-muted'
             }`}
             type="button"
             onClick={() => setTab('lessons')}
           >
             Lecciones
+            {tab === 'lessons' && <span className="absolute bottom-[-1px] left-0 h-0.5 w-full bg-violet" />}
           </button>
           <button
-            className={`rounded-[1.25rem] px-4 py-3 text-sm font-bold transition ${
-              tab === 'resources' ? 'bg-white text-ink shadow-sm' : 'text-muted'
+            className={`relative px-4 py-4 text-lg font-black transition ${
+              tab === 'resources' ? 'text-violet' : 'text-muted'
             }`}
             type="button"
             onClick={() => setTab('resources')}
           >
             Recursos
+            {tab === 'resources' && <span className="absolute bottom-[-1px] left-0 h-0.5 w-full bg-violet" />}
           </button>
         </div>
       </section>
 
       {tab === 'lessons' ? (
-        <section className="space-y-3 px-5">
+        <section className="px-8">
           {course.lessons.map((lesson, index) => (
             <LessonItem
               key={lesson.id}
@@ -126,12 +148,13 @@ const CourseDetailScreen = () => {
           ))}
         </section>
       ) : (
-        <section className="space-y-3 px-5">
+        <section className="space-y-3 px-8">
           {course.resources.map((resource) => (
             <div
               key={resource}
-              className="rounded-3xl border border-gray-100 bg-white p-4 text-sm font-bold text-ink shadow-sm"
+              className="rounded-[1.25rem] border border-gray-200 bg-white p-4 text-sm font-bold text-ink"
             >
+              <BookOpen className="mb-3 h-5 w-5 text-violet" />
               {resource}
               <p className="mt-2 text-xs font-semibold leading-relaxed text-muted">
                 Material de apoyo para aplicar durante la clase virtual.

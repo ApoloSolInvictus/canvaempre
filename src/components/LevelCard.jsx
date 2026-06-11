@@ -1,49 +1,83 @@
-import { CheckCircle2, Lock } from 'lucide-react';
+import {
+  Check,
+  ChevronRight,
+  ImagePlus,
+  Layers3,
+  Lock,
+  Palette,
+  Presentation,
+  Sparkles,
+} from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { calculateCourseProgress } from '../services/progressService';
 import { cn } from '../lib/cn';
-import ProgressBar from './ProgressBar';
+import { calculateCourseProgress } from '../services/progressService';
+
+const styles = [
+  {
+    shell: 'border-emerald-200 bg-emerald-50/75',
+    icon: 'bg-emerald-100 text-emerald-500',
+    iconComponent: Palette,
+  },
+  {
+    shell: 'border-violet-200 bg-violet-50/80',
+    icon: 'bg-violet-100 text-violet',
+    iconComponent: Layers3,
+  },
+  {
+    shell: 'border-violet-200 bg-violet-50/80',
+    icon: 'bg-violet-100 text-violet',
+    iconComponent: ImagePlus,
+  },
+  {
+    shell: 'border-amber-200 bg-amber-50/75',
+    icon: 'bg-amber-100 text-amber-500',
+    iconComponent: Sparkles,
+  },
+  {
+    shell: 'border-rose-200 bg-rose-50/75',
+    icon: 'bg-rose-100 text-rose-500',
+    iconComponent: Presentation,
+  },
+];
 
 const LevelCard = ({ course, completedLessons = [], locked = false }) => {
   const navigate = useNavigate();
   const progress = calculateCourseProgress(course, completedLessons);
   const complete = progress === 100;
+  const style = styles[course.level] ?? styles[1];
+  const Icon = style.iconComponent;
 
   return (
     <button
-      className="grid w-[220px] shrink-0 gap-4 rounded-3xl border border-gray-100 bg-white p-4 text-left shadow-sm transition active:scale-[0.99] disabled:active:scale-100"
+      className={cn(
+        'flex min-h-[92px] w-full items-center gap-4 rounded-[1.35rem] border px-4 py-3 text-left transition active:scale-[0.99] disabled:active:scale-100',
+        style.shell,
+      )}
       type="button"
       disabled={locked}
       onClick={() => navigate(`/app/curso/${course.id}`)}
     >
-      <div className="flex items-start justify-between gap-3">
-        <div
-          className={cn(
-            'grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br text-sm font-black text-white',
-            course.gradient,
-          )}
-        >
-          {course.level}
-        </div>
-        {locked ? (
-          <Lock className="h-5 w-5 text-muted" />
-        ) : complete ? (
-          <CheckCircle2 className="h-5 w-5 text-emerald-500" />
-        ) : (
-          <span className="rounded-full bg-violet/10 px-3 py-1 text-xs font-bold text-violet">
-            {progress}%
-          </span>
-        )}
-      </div>
-      <div>
-        <h3 className="line-clamp-2 text-base font-bold leading-tight text-ink">
+      <span className={cn('grid h-16 w-16 shrink-0 place-items-center rounded-[1.25rem]', style.icon)}>
+        <Icon className="h-8 w-8" strokeWidth={2.2} />
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block text-sm font-black text-ink">Nivel {course.level}</span>
+        <span className="mt-1 line-clamp-2 block text-base font-black leading-snug text-ink">
           {course.title}
-        </h3>
-        <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-muted">
-          {course.objective}
-        </p>
-      </div>
-      <ProgressBar compact value={progress} />
+        </span>
+        <span className="mt-2 block text-sm font-medium text-muted">
+          {course.duration} · {course.lessonsCount} lecciones
+        </span>
+      </span>
+      {locked ? (
+        <Lock className="h-6 w-6 shrink-0 text-muted" />
+      ) : complete ? (
+        <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-emerald-500 text-white shadow-[0_12px_28px_rgba(34,197,94,0.25)]">
+          <Check className="h-7 w-7" strokeWidth={3} />
+        </span>
+      ) : (
+        <ChevronRight className="h-8 w-8 shrink-0 text-ink" strokeWidth={2.3} />
+      )}
     </button>
   );
 };

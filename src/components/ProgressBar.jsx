@@ -9,9 +9,9 @@ const ProgressBar = ({ value = 0, label, compact = false }) => {
           <span className="text-ink">{safeValue}%</span>
         </div>
       )}
-      <div className={compact ? 'h-2 rounded-full bg-gray-100' : 'h-3 rounded-full bg-gray-100'}>
+      <div className={compact ? 'h-1.5 rounded-full bg-gray-200' : 'h-2 rounded-full bg-gray-200'}>
         <div
-          className="h-full rounded-full bg-gradient-to-r from-indigo-600 to-violet-600 transition-all duration-500"
+          className="h-full rounded-full bg-gradient-to-r from-indigo-600 via-violet-600 to-violet-400 transition-all duration-500"
           style={{ width: `${safeValue}%` }}
         />
       </div>

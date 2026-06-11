@@ -1,48 +1,33 @@
-import { CheckCircle2, Circle, Clock3, Lock } from 'lucide-react';
+import { Check, ChevronRight, Lock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { cn } from '../lib/cn';
 
 const LessonItem = ({ lesson, completed = false, locked = false, index }) => {
   const navigate = useNavigate();
 
   return (
     <button
-      className="flex w-full items-center gap-3 rounded-3xl border border-gray-100 bg-white p-4 text-left shadow-sm transition active:scale-[0.99] disabled:opacity-60 disabled:active:scale-100"
+      className="flex w-full items-center gap-3 border-b border-gray-200 py-3.5 text-left transition active:scale-[0.995] disabled:opacity-60 disabled:active:scale-100"
       type="button"
       disabled={locked}
       onClick={() => navigate(`/app/leccion/${lesson.id}`)}
     >
-      <div
-        className={cn(
-          'grid h-11 w-11 shrink-0 place-items-center rounded-2xl text-sm font-black',
-          completed
-            ? 'bg-emerald-50 text-emerald-500'
-            : locked
-              ? 'bg-gray-100 text-muted'
-              : 'bg-violet/10 text-violet',
-        )}
-      >
-        {completed ? (
-          <CheckCircle2 className="h-5 w-5" />
-        ) : locked ? (
-          <Lock className="h-5 w-5" />
-        ) : (
-          index + 1
-        )}
-      </div>
-      <div className="min-w-0 flex-1">
-        <h3 className="line-clamp-2 text-sm font-bold leading-tight text-ink">
-          {lesson.title}
-        </h3>
-        <p className="mt-1 flex items-center gap-1 text-xs font-semibold text-muted">
-          <Clock3 className="h-3.5 w-3.5" />
-          {lesson.duration}
-        </p>
-      </div>
-      {completed ? (
-        <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+      <span className="min-w-0 flex-1">
+        <span className="line-clamp-1 block text-[15px] font-black leading-tight text-ink">
+          {index + 1}. {lesson.title}
+        </span>
+        <span className="mt-1 line-clamp-1 block text-sm font-medium text-muted">
+          {lesson.objective}
+        </span>
+      </span>
+      <span className="shrink-0 text-sm font-medium text-muted">{lesson.duration}</span>
+      {locked ? (
+        <Lock className="h-5 w-5 shrink-0 text-muted" />
+      ) : completed ? (
+        <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-emerald-500 text-white">
+          <Check className="h-[18px] w-[18px]" strokeWidth={3} />
+        </span>
       ) : (
-        <Circle className="h-5 w-5 text-gray-300" />
+        <ChevronRight className="h-6 w-6 shrink-0 text-muted" />
       )}
     </button>
   );

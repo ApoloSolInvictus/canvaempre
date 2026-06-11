@@ -11,7 +11,7 @@ const items = [
 ];
 
 const BottomNavigation = () => (
-  <nav className="fixed bottom-0 left-1/2 z-30 w-full max-w-[430px] -translate-x-1/2 border-t border-gray-100 bg-white/95 px-3 pb-[calc(10px+env(safe-area-inset-bottom))] pt-2 backdrop-blur-xl">
+  <nav className="fixed bottom-0 left-1/2 z-30 w-full max-w-[440px] -translate-x-1/2 border-t border-gray-100 bg-white/95 px-4 pb-[calc(12px+env(safe-area-inset-bottom))] pt-3 backdrop-blur-xl">
     <div className="grid grid-cols-5 gap-1">
       {items.map((item) => {
         const Icon = item.icon;
@@ -22,12 +22,12 @@ const BottomNavigation = () => (
             end={item.end}
             className={({ isActive }) =>
               cn(
-                'flex min-h-[58px] flex-col items-center justify-center gap-1 rounded-2xl text-[11px] font-semibold text-muted transition',
-                isActive && 'bg-violet/10 text-violet',
+                'flex min-h-[64px] flex-col items-center justify-center gap-1.5 rounded-2xl text-[12px] font-medium text-muted transition',
+                isActive && 'text-violet',
               )
             }
           >
-            <Icon className="h-5 w-5" />
+            <Icon className="h-7 w-7" strokeWidth={item.label === 'Inicio' ? 2.8 : 2.3} />
             <span className="leading-none">{item.label}</span>
           </NavLink>
         );
