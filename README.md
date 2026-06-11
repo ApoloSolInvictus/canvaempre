@@ -61,6 +61,40 @@ npm run lint
 En Windows, si PowerShell bloquea `npm.ps1`, usa `npm.cmd` o ejecuta los
 scripts desde `cmd`.
 
+## Deploy en Vercel
+
+Este proyecto queda preparado para Vercel con `vercel.json`.
+
+Configuracion esperada:
+
+- Framework preset: `Vite`
+- Install command: `npm install`
+- Build command: `npm run build`
+- Output directory: `dist`
+- SPA fallback: todas las rutas vuelven a `index.html`
+
+Pasos:
+
+1. En Vercel, importa el repo `ApoloSolInvictus/canvaempre`.
+2. Agrega las variables de entorno `VITE_FIREBASE_*` en Project Settings >
+   Environment Variables para Production, Preview y Development.
+3. Despliega desde la rama `main`.
+4. En Firebase Authentication, agrega el dominio de Vercel y tu dominio propio
+   en la lista de dominios autorizados para que Google Login funcione.
+5. En Vercel > Project > Settings > Domains, agrega tu dominio propio y sigue
+   los registros DNS que Vercel indique.
+
+`vercel.json` tambien agrega cache largo para assets versionados y headers
+basicos de seguridad.
+
+## Vercel vs GitHub Pages
+
+Vercel es la mejor opcion para este MVP porque maneja muy bien apps Vite con
+React Router, previews automaticos por push y dominios propios desde el panel.
+GitHub Pages tambien sirve para sitios estaticos y soporta dominios propios,
+pero con `BrowserRouter` suele requerir configuraciones extra para evitar 404
+al abrir rutas internas directamente.
+
 ## Firestore
 
 La app usa estas colecciones:
