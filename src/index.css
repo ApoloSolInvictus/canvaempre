@@ -80,6 +80,17 @@ input {
   background: linear-gradient(90deg, #5b42ff 0 12%, #e9ebf3 12% 100%);
 }
 
+a.hotmart-fb.hotmart__button-checkout {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  text-decoration: none !important;
+}
+
 @media print {
   body {
     background: #ffffff !important;

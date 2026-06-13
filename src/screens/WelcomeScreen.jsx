@@ -41,9 +41,11 @@ const WelcomeScreen = () => {
           <span className="h-3 w-3 rounded-full bg-gray-200" />
         </div>
         <div className="mt-9 space-y-5">
-          <PrimaryButton onClick={() => navigate('/login')}>Comenzar</PrimaryButton>
+          <PrimaryButton onClick={() => navigate('/comprar')}>
+            Comprar el curso
+          </PrimaryButton>
           <p className="text-center text-base font-medium text-ink">
-            &iquest;Ya tienes cuenta?{' '}
+            &iquest;Ya compraste?{' '}
             <Link className="font-semibold text-violet" to="/login">
               Inicia sesi&oacute;n
             </Link>

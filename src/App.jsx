@@ -10,12 +10,23 @@ import LessonScreen from './screens/LessonScreen';
 import LoginScreen from './screens/LoginScreen';
 import MyClassesScreen from './screens/MyClassesScreen';
 import ProfileScreen from './screens/ProfileScreen';
+import PurchaseScreen from './screens/PurchaseScreen';
+import PurchaseStatusScreen from './screens/PurchaseStatusScreen';
 import WelcomeScreen from './screens/WelcomeScreen';
 
 const App = () => (
   <Routes>
     <Route path="/" element={<WelcomeScreen />} />
     <Route path="/login" element={<LoginScreen />} />
+    <Route path="/comprar" element={<PurchaseScreen />} />
+    <Route
+      path="/compra/aprobada"
+      element={<PurchaseStatusScreen status="approved" />}
+    />
+    <Route
+      path="/compra/pendiente"
+      element={<PurchaseStatusScreen status="pending" />}
+    />
     <Route
       path="/app"
       element={

@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Canva para Emprender - Hotmart Assets</title>
+    <style>
+      :root {
+        font-family: "Segoe UI", Arial, sans-serif;
+        color: #0b1026;
+        background: #e7e9ef;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        padding: 48px;
+        display: grid;
+        gap: 48px;
+        justify-content: center;
+      }
+
+      .asset {
+        position: relative;
+        overflow: hidden;
+        background: #fff;
+      }
+
+      .cover {
+        width: 1200px;
+        height: 1200px;
+      }
+
+      .cover__image {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .cover::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          90deg,
+          rgba(255, 255, 255, 0.98) 0%,
+          rgba(255, 255, 255, 0.94) 30%,
+          rgba(255, 255, 255, 0.5) 48%,
+          transparent 64%
+        );
+      }
+
+      .cover__copy {
+        position: absolute;
+        z-index: 3;
+        top: 130px;
+        left: 150px;
+        width: 450px;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        min-height: 52px;
+        padding: 0 24px;
+        border: 2px solid rgba(109, 53, 255, 0.25);
+        border-radius: 999px;
+        color: #5b2ae8;
+        background: rgba(255, 255, 255, 0.9);
+        font-size: 25px;
+        font-weight: 750;
+      }
+
+      .cover .eyebrow {
+        margin-left: 70px;
+      }
+
+      .cover h1 {
+        margin: 22px 0 0;
+        font-size: 92px;
+        line-height: 0.9;
+        letter-spacing: 0;
+      }
+
+      .cover h1 span {
+        display: block;
+        margin-bottom: 20px;
+        color: transparent;
+        background: linear-gradient(90deg, #10b8d5, #3e66ee 56%, #7628ed);
+        background-clip: text;
+        -webkit-background-clip: text;
+      }
+
+      .cover h1 strong {
+        display: block;
+        width: 390px;
+        font-size: 57px;
+        line-height: 0.94;
+      }
+
+      .cover p {
+        width: 340px;
+        margin: 24px 0 0;
+        font-size: 27px;
+        line-height: 1.3;
+        font-weight: 620;
+        color: #30364c;
+      }
+
+      .results {
+        width: 1600px;
+        height: 900px;
+      }
+
+      .results img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .results::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(90deg, rgba(8, 12, 31, 0.74), transparent 55%);
+      }
+
+      .results__copy {
+        position: absolute;
+        z-index: 2;
+        left: 86px;
+        bottom: 76px;
+        width: 600px;
+        color: #fff;
+      }
+
+      .results__copy small {
+        display: block;
+        margin-bottom: 18px;
+        font-size: 25px;
+        font-weight: 750;
+        color: #8ce9f2;
+      }
+
+      .results__copy h2 {
+        margin: 0;
+        font-size: 66px;
+        line-height: 1.03;
+        letter-spacing: 0;
+      }
+
+      .results__copy p {
+        margin: 22px 0 0;
+        font-size: 28px;
+        line-height: 1.4;
+        color: rgba(255, 255, 255, 0.88);
+      }
+
+      .program {
+        width: 1600px;
+        height: 900px;
+        padding: 68px 76px;
+        background:
+          radial-gradient(circle at 90% 8%, rgba(24, 191, 224, 0.16), transparent 330px),
+          radial-gradient(circle at 72% 94%, rgba(109, 53, 255, 0.15), transparent 390px),
+          #fff;
+      }
+
+      .program__header {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        padding-bottom: 30px;
+        border-bottom: 2px solid #e8eaf1;
+      }
+
+      .program h2 {
+        margin: 0;
+        font-size: 64px;
+        line-height: 1;
+      }
+
+      .program__summary {
+        color: #6d35ff;
+        font-size: 26px;
+        font-weight: 760;
+      }
+
+      .levels {
+        display: grid;
+        gap: 18px;
+        margin-top: 30px;
+      }
+
+      .level {
+        display: grid;
+        grid-template-columns: 84px 180px 1fr;
+        min-height: 114px;
+        align-items: center;
+        border-bottom: 1px solid #e9ebf2;
+      }
+
+      .level__number {
+        display: grid;
+        width: 58px;
+        height: 58px;
+        place-items: center;
+        border-radius: 16px;
+        background: var(--level-color);
+        color: #fff;
+        font-size: 28px;
+        font-weight: 850;
+      }
+
+      .level__label {
+        color: #73798b;
+        font-size: 24px;
+        font-weight: 730;
+      }
+
+      .level__title {
+        font-size: 31px;
+        font-weight: 780;
+      }
+
+      .author {
+        width: 1000px;
+        height: 1000px;
+        display: grid;
+        grid-template-rows: 460px 1fr;
+        background:
+          radial-gradient(circle at 20% 10%, rgba(24, 191, 224, 0.18), transparent 300px),
+          radial-gradient(circle at 92% 42%, rgba(109, 53, 255, 0.18), transparent 340px),
+          #fff;
+      }
+
+      .author__visual {
+        position: relative;
+        display: grid;
+        place-items: center;
+        padding: 72px 100px 20px;
+      }
+
+      .author__visual::before {
+        content: "";
+        position: absolute;
+        width: 600px;
+        height: 300px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.72);
+        filter: blur(3px);
+      }
+
+      .author__visual img {
+        position: relative;
+        z-index: 1;
+        width: 600px;
+        height: 350px;
+        object-fit: contain;
+      }
+
+      .author__copy {
+        padding: 46px 92px 70px;
+        text-align: center;
+      }
+
+      .author__copy small {
+        color: #6d35ff;
+        font-size: 25px;
+        font-weight: 800;
+        text-transform: uppercase;
+      }
+
+      .author__copy h2 {
+        margin: 20px 0 8px;
+        font-size: 70px;
+        line-height: 1;
+      }
+
+      .author__role {
+        margin: 0;
+        color: #565d72;
+        font-size: 31px;
+        font-weight: 650;
+      }
+
+      .author__line {
+        width: 90px;
+        height: 6px;
+        margin: 32px auto;
+        border-radius: 999px;
+        background: linear-gradient(90deg, #18bfe0, #6d35ff);
+      }
+
+      .author__description {
+        margin: 0 auto;
+        max-width: 700px;
+        color: #30364c;
+        font-size: 27px;
+        line-height: 1.45;
+      }
+    </style>
+  </head>
+  <body>
+    <section class="asset cover" id="cover">
+      <img
+        class="cover__image"
+        src="./assets/source/course-devices-square.png"
+        alt=""
+      />
+      <div class="cover__copy">
+        <div class="eyebrow">40 clases prácticas</div>
+        <h1>
+          <span>Canva</span>
+          <strong>para Emprender</strong>
+        </h1>
+        <p>Diseña tu marca. Impulsa tu negocio.</p>
+      </div>
+    </section>
+
+    <section class="asset results" id="results">
+      <img src="./assets/source/entrepreneurs-wide.png" alt="" />
+      <div class="results__copy">
+        <small>APRENDE HACIENDO</small>
+        <h2>Diseños reales para negocios reales</h2>
+        <p>
+          Convierte tus ideas en publicaciones, marcas y presentaciones que
+          comuniquen con claridad.
+        </p>
+      </div>
+    </section>
+
+    <section class="asset program" id="program">
+      <header class="program__header">
+        <h2>Tu ruta de aprendizaje</h2>
+        <div class="program__summary">5 niveles · 40 clases · Certificado digital</div>
+      </header>
+      <div class="levels">
+        <article class="level" style="--level-color: #6d35ff">
+          <div class="level__number">0</div>
+          <div class="level__label">Nivel inicial</div>
+          <div class="level__title">Introducción a Canva</div>
+        </article>
+        <article class="level" style="--level-color: #2767db">
+          <div class="level__number">1</div>
+          <div class="level__label">Fundamentos</div>
+          <div class="level__title">Fundamentos de Diseño Gráfico</div>
+        </article>
+        <article class="level" style="--level-color: #a13bdd">
+          <div class="level__number">2</div>
+          <div class="level__label">Contenido</div>
+          <div class="level__title">Diseña Publicaciones que Conectan</div>
+        </article>
+        <article class="level" style="--level-color: #16a9c8">
+          <div class="level__number">3</div>
+          <div class="level__label">Identidad</div>
+          <div class="level__title">Branding para Emprendedores</div>
+        </article>
+        <article class="level" style="--level-color: #d43d82">
+          <div class="level__number">4</div>
+          <div class="level__label">Presentación</div>
+          <div class="level__title">Mockups y Presentaciones Pro</div>
+        </article>
+      </div>
+    </section>
+
+    <section class="asset author" id="author">
+      <div class="author__visual">
+        <img src="./assets/source/w-studio-logo.png" alt="" />
+      </div>
+      <div class="author__copy">
+        <small>Creado por W Studio</small>
+        <h2>Ronny Woods</h2>
+        <p class="author__role">CEO de W Studio</p>
+        <div class="author__line"></div>
+        <p class="author__description">
+          Tecnología creativa y aprendizaje práctico para ayudar a
+          emprendedores a comunicar sus ideas con una imagen profesional.
+        </p>
+      </div>
+    </section>
+  </body>
+</html>

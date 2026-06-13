@@ -11,7 +11,17 @@ service cloud.firestore {
     }
 
     match /users/{userId} {
-      allow read, create, update: if ownsProfile(userId);
+      allow read: if ownsProfile(userId);
+      allow create: if ownsProfile(userId)
+        && request.resource.data.accessStatus == 'pending_payment';
+      allow update: if ownsProfile(userId)
+        && !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+          'accessStatus',
+          'paymentProvider',
+          'paymentTransaction',
+          'paidAt',
+          'refundedAt'
+        ]);
       allow delete: if false;
     }
 

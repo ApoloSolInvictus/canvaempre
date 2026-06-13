@@ -110,7 +110,7 @@ export const getNextLesson = (completedLessons = []) => {
   return { course: availableCourse, lesson };
 };
 
-const baseProfile = (user) => {
+const baseProfile = (user, accessStatus = 'active') => {
   const name =
     user?.displayName ||
     user?.name ||
@@ -125,17 +125,18 @@ const baseProfile = (user) => {
     totalProgress: 0,
     completedLessons: [],
     favoriteCourses: [],
+    accessStatus,
     createdAt: new Date().toISOString(),
   };
 };
 
-const normalizeProfile = (user, data = {}) => {
+const normalizeProfile = (user, data = {}, defaultAccessStatus = 'active') => {
   const completedLessons = toArray(data.completedLessons);
   const favoriteCourses = toArray(data.favoriteCourses);
   const stats = calculateProfileStats(completedLessons);
 
   return applyCertificateMetadata({
-    ...baseProfile(user),
+    ...baseProfile(user, defaultAccessStatus),
     ...data,
     completedLessons,
     favoriteCourses,
@@ -144,14 +145,14 @@ const normalizeProfile = (user, data = {}) => {
   }, stats);
 };
 
-const readLocalProfile = (user) => {
+const readLocalProfile = (user, defaultAccessStatus = 'active') => {
   const stored = window.localStorage.getItem(localKey(user.uid));
-  if (!stored) return normalizeProfile(user);
+  if (!stored) return normalizeProfile(user, {}, defaultAccessStatus);
 
   try {
-    return normalizeProfile(user, JSON.parse(stored));
+    return normalizeProfile(user, JSON.parse(stored), 'active');
   } catch {
-    return normalizeProfile(user);
+    return normalizeProfile(user, {}, defaultAccessStatus);
   }
 };
 
@@ -177,20 +178,21 @@ export const fetchUserProfile = async (user) => {
   if (!user) return null;
 
   if (!isFirebaseConfigured || !db) {
-    const profile = readLocalProfile(user);
+    const profile = readLocalProfile(user, 'active');
     return writeLocalProfile(profile);
   }
 
   try {
-    const localProfile = readLocalProfile(user);
+    const localProfile = readLocalProfile(user, 'pending_payment');
     const userRef = doc(db, 'users', user.uid);
     const snapshot = await getDoc(userRef);
 
     if (!snapshot.exists()) {
       const profile = normalizeProfile(user, {
         ...localProfile,
+        accessStatus: 'pending_payment',
         syncPending: false,
-      });
+      }, 'pending_payment');
       await setDoc(userRef, {
         ...profile,
         createdAt: serverTimestamp(),
@@ -199,7 +201,7 @@ export const fetchUserProfile = async (user) => {
       return writeLocalProfile(profile);
     }
 
-    const remoteProfile = normalizeProfile(user, snapshot.data());
+    const remoteProfile = normalizeProfile(user, snapshot.data(), 'active');
     const profile = {
       ...mergeProfiles(user, remoteProfile, localProfile),
       syncPending: false,
@@ -223,7 +225,7 @@ export const fetchUserProfile = async (user) => {
 
     return writeLocalProfile(profile);
   } catch {
-    const profile = readLocalProfile(user);
+    const profile = readLocalProfile(user, 'pending_payment');
     return writeLocalProfile({
       ...profile,
       syncPending: true,

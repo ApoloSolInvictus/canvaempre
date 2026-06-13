@@ -4,11 +4,11 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import PrimaryButton from './PrimaryButton';
 
-const AuthForm = () => {
+const AuthForm = ({ initialMode = 'login', successPath = '/app' }) => {
   const navigate = useNavigate();
   const { register, login, loginWithGoogle, loginAsDemo, isFirebaseConfigured } =
     useAuth();
-  const [mode, setMode] = useState('login');
+  const [mode, setMode] = useState(initialMode);
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -21,7 +21,7 @@ const AuthForm = () => {
     setForm((current) => ({ ...current, [field]: value }));
   };
 
-  const handleSuccess = () => navigate('/app', { replace: true });
+  const handleSuccess = () => navigate(successPath, { replace: true });
 
   const handleSubmit = async (event) => {
     event.preventDefault();
