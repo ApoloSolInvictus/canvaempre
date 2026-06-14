@@ -13,28 +13,55 @@ service cloud.firestore {
     match /users/{userId} {
       allow read: if ownsProfile(userId);
       allow create: if ownsProfile(userId)
-        && request.resource.data.accessStatus == 'pending_payment';
+        && request.resource.data.uid == userId
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.accessStatus == 'pending_payment'
+        && !request.resource.data.keys().hasAny([
+          'paymentProvider',
+          'paymentTransaction',
+          'paidAt',
+          'refundedAt',
+          'certificateIssuedAt',
+          'certificateNumber',
+          'certificateTitle'
+        ]);
       allow update: if ownsProfile(userId)
         && !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+          'uid',
+          'email',
           'accessStatus',
           'paymentProvider',
           'paymentTransaction',
           'paidAt',
-          'refundedAt'
+          'refundedAt',
+          'certificateIssuedAt',
+          'certificateNumber',
+          'certificateTitle'
         ]);
       allow delete: if false;
     }
 
     match /courses/{courseId} {
       allow read: if true;
-      allow create, update: if signedIn();
-      allow delete: if false;
+      allow write: if false;
     }
 
     match /lessons/{lessonId} {
       allow read: if true;
-      allow create, update: if signedIn();
-      allow delete: if false;
+      allow write: if false;
+    }
+
+    match /certificates/{certificateId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /hotmartEntitlements/{documentId} {
+      allow read, write: if false;
+    }
+
+    match /hotmartWebhookEvents/{documentId} {
+      allow read, write: if false;
     }
   }
 }

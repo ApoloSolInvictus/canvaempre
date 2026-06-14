@@ -5,8 +5,10 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import PrimaryButton from '../components/PrimaryButton';
 import { useAuth } from '../context/AuthContext';
+import { trackApprovedPurchase } from '../services/analytics';
 
 const statusConfig = {
   approved: {
@@ -36,6 +38,10 @@ const PurchaseStatusScreen = ({ status = 'approved' }) => {
   const Icon = config.icon;
 
   const destination = user ? '/app' : '/login';
+
+  useEffect(() => {
+    if (status === 'approved') trackApprovedPurchase();
+  }, [status]);
 
   return (
     <div className="phone-shell flex min-h-screen flex-col bg-white px-7 py-10">
@@ -80,4 +86,3 @@ const PurchaseStatusScreen = ({ status = 'approved' }) => {
 };
 
 export default PurchaseStatusScreen;
-

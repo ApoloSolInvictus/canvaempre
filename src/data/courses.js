@@ -777,15 +777,26 @@ const buildFallbackGuide = (course, title, index) => ({
   assignment: 'Guarda tu avance con nombre claro para retomarlo en la próxima clase.',
 });
 
-const buildCourseResources = (course) =>
-  resourceCatalog[course.id] ??
-  course.resources.map((title) => ({
-    type: 'Recurso',
-    title,
-    description: 'Material de apoyo para aplicar durante la clase virtual.',
-    items: ['Revisa el material.', 'Aplícalo en una pieza real.', 'Guarda tu avance.'],
-    useCase: 'Úsalo como apoyo práctico del módulo.',
+const buildCourseResources = (course) => {
+  const resources =
+    resourceCatalog[course.id] ??
+    course.resources.map((title) => ({
+      type: 'Recurso',
+      title,
+      description: 'Material de apoyo para aplicar durante la clase virtual.',
+      items: [
+        'Revisa el material.',
+        'Aplícalo en una pieza real.',
+        'Guarda tu avance.',
+      ],
+      useCase: 'Úsalo como apoyo práctico del módulo.',
+    }));
+
+  return resources.map((resource, index) => ({
+    ...resource,
+    downloadUrl: `/recursos/${course.id}-recurso-${index + 1}.pdf`,
   }));
+};
 
 export const courses = courseBlueprints.map((course) => {
   const lessons = course.lessons.map((title, lessonIndex) => {

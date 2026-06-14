@@ -3,6 +3,7 @@ import {
   CheckCircle2,
   ChevronLeft,
   Clock3,
+  Download,
   Heart,
   List,
   Lock,
@@ -19,11 +20,14 @@ import { getCourseById } from '../data/courses';
 import {
   isCourseLocked,
 } from '../services/progressService';
+import { trackEvent } from '../services/analytics';
+import { shareContent } from '../services/share';
 
 const CourseDetailScreen = () => {
   const { courseId } = useParams();
   const navigate = useNavigate();
   const [tab, setTab] = useState('lessons');
+  const [shareMessage, setShareMessage] = useState('');
   const { profile, toggleFavorite } = useProgress();
   const course = getCourseById(courseId);
   const completedLessons = profile?.completedLessons ?? [];
@@ -66,6 +70,23 @@ const CourseDetailScreen = () => {
             aria-label="Compartir"
             className="grid h-11 w-11 place-items-center rounded-full bg-white text-ink"
             type="button"
+            onClick={async () => {
+              try {
+                const result = await shareContent({
+                  title: `${course.title} | Canva para Emprender`,
+                  text: course.description,
+                  url: `${window.location.origin}/comprar`,
+                  contentType: 'course',
+                });
+                setShareMessage(
+                  result === 'copied'
+                    ? 'Enlace copiado.'
+                    : 'Curso compartido.',
+                );
+              } catch {
+                setShareMessage('No se pudo compartir en este dispositivo.');
+              }
+            }}
           >
             <Share2 className="h-8 w-8" strokeWidth={2.1} />
           </button>
@@ -73,6 +94,11 @@ const CourseDetailScreen = () => {
       </header>
 
       <section className="space-y-5 px-8">
+        {shareMessage && (
+          <p className="rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-700">
+            {shareMessage}
+          </p>
+        )}
         <span className="inline-flex rounded-full bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2 text-sm font-black uppercase text-white shadow-[0_12px_28px_rgba(109,53,255,0.24)]">
           Nivel {course.level}
         </span>
@@ -192,6 +218,20 @@ const CourseDetailScreen = () => {
                   {resource.useCase}
                 </p>
               </div>
+              <a
+                className="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-violet px-4 text-sm font-black text-white"
+                download
+                href={resource.downloadUrl}
+                onClick={() =>
+                  trackEvent('resource_download', {
+                    course_id: course.id,
+                    resource_name: resource.title,
+                  })
+                }
+              >
+                <Download className="h-5 w-5" />
+                Descargar PDF
+              </a>
             </div>
           ))}
         </section>

@@ -1,7 +1,16 @@
-import { Check, ChevronLeft, Clock3, Lock, MoreVertical } from 'lucide-react';
+import {
+  Check,
+  ChevronLeft,
+  Clock3,
+  Headphones,
+  Lock,
+  MoreVertical,
+  Share2,
+} from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import MockupVisual from '../components/MockupVisual';
+import ActionSheet from '../components/ActionSheet';
 import PrimaryButton from '../components/PrimaryButton';
 import ProgressBar from '../components/ProgressBar';
 import { useProgress } from '../context/ProgressContext';
@@ -14,6 +23,7 @@ import {
   calculateCourseProgress,
   isCourseLocked,
 } from '../services/progressService';
+import { shareContent } from '../services/share';
 
 const LessonScreen = () => {
   const { lessonId } = useParams();
@@ -22,6 +32,7 @@ const LessonScreen = () => {
   const [isCompleting, setIsCompleting] = useState(false);
   const [optimisticComplete, setOptimisticComplete] = useState(false);
   const [error, setError] = useState('');
+  const [optionsOpen, setOptionsOpen] = useState(false);
   const lesson = getLessonById(lessonId);
   const course = getCourseForLesson(lessonId);
   const completedLessons = profile?.completedLessons ?? [];
@@ -95,6 +106,7 @@ const LessonScreen = () => {
           aria-label="Opciones"
           className="grid h-11 w-11 place-items-center rounded-full bg-white text-ink"
           type="button"
+          onClick={() => setOptionsOpen(true)}
         >
           <MoreVertical className="h-7 w-7" strokeWidth={2.3} />
         </button>
@@ -234,6 +246,50 @@ const LessonScreen = () => {
           </section>
         </>
       )}
+      <ActionSheet
+        description={lesson.title}
+        open={optionsOpen}
+        title="Opciones de la clase"
+        onClose={() => setOptionsOpen(false)}
+      >
+        <button
+          className="flex min-h-12 w-full items-center gap-3 rounded-2xl border border-gray-100 px-4 text-sm font-black text-ink"
+          type="button"
+          onClick={async () => {
+            try {
+              await shareContent({
+                title: lesson.title,
+                text: lesson.summary,
+                url: `${window.location.origin}/comprar`,
+                contentType: 'lesson',
+              });
+            } finally {
+              setOptionsOpen(false);
+            }
+          }}
+        >
+          <Share2 className="h-5 w-5 text-violet" />
+          Compartir el curso
+        </button>
+        <button
+          className="flex min-h-12 w-full items-center gap-3 rounded-2xl border border-gray-100 px-4 text-sm font-black text-ink"
+          type="button"
+          onClick={() => {
+            setOptionsOpen(false);
+            navigate(`/app/curso/${course.id}`);
+          }}
+        >
+          <Clock3 className="h-5 w-5 text-violet" />
+          Volver al módulo
+        </button>
+        <a
+          className="flex min-h-12 w-full items-center gap-3 rounded-2xl border border-gray-100 px-4 text-sm font-black text-ink no-underline"
+          href="mailto:info@wstudiocr.com?subject=Ayuda%20con%20una%20clase"
+        >
+          <Headphones className="h-5 w-5 text-violet" />
+          Contactar soporte
+        </a>
+      </ActionSheet>
     </div>
   );
 };

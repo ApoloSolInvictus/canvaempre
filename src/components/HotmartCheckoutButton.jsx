@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { CreditCard, LoaderCircle } from 'lucide-react';
 import { HOTMART_ASSETS, HOTMART_LINKS } from '../config/hotmart';
 import { cn } from '../lib/cn';
+import { trackEvent, withAttribution } from '../services/analytics';
 
 const widgetScriptId = 'hotmart-checkout-widget';
 const widgetStylesId = 'hotmart-checkout-styles';
@@ -39,13 +40,19 @@ const HotmartCheckoutButton = ({ className = '' }) => {
         'hotmart-fb hotmart__button-checkout block w-full no-underline',
         className,
       )}
-      href={HOTMART_LINKS.checkoutWidget}
+      href={withAttribution(HOTMART_LINKS.checkoutWidget)}
       ref={checkoutLinkRef}
       onClick={() => {
         window.sessionStorage.setItem(
           'canva-emprende-checkout-started',
           new Date().toISOString(),
         );
+        trackEvent('begin_checkout', {
+          currency: 'USD',
+          value: 55,
+          content_name: 'Canva para Emprender',
+          content_type: 'product',
+        });
       }}
     >
       <span className="flex min-h-[62px] w-full items-center justify-center gap-3 rounded-[1.35rem] bg-[linear-gradient(90deg,#5B3DF4_0%,#7B2DFF_100%)] px-5 py-4 text-lg font-bold text-white shadow-soft transition active:scale-[0.99]">
@@ -59,7 +66,16 @@ const HotmartCheckoutButton = ({ className = '' }) => {
 export const HotmartCheckoutFallback = () => (
   <a
     className="inline-flex min-h-[50px] w-full items-center justify-center gap-2 rounded-[1.2rem] border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-ink no-underline shadow-sm"
-    href={HOTMART_LINKS.checkout}
+    href={withAttribution(HOTMART_LINKS.checkout)}
+    onClick={() =>
+      trackEvent('begin_checkout', {
+        currency: 'USD',
+        value: 55,
+        content_name: 'Canva para Emprender',
+        content_type: 'product',
+        checkout_mode: 'fallback',
+      })
+    }
     rel="noreferrer"
     target="_blank"
   >

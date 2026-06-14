@@ -6,7 +6,9 @@ import {
   FileBadge2,
   Hash,
   ShieldCheck,
+  ScanSearch,
 } from 'lucide-react';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PrimaryButton from '../components/PrimaryButton';
 import ProgressBar from '../components/ProgressBar';
@@ -17,11 +19,21 @@ const W_STUDIO_LOGO = '/w-studio-logo.png';
 
 const CertificateScreen = () => {
   const navigate = useNavigate();
-  const { profile, stats } = useProgress();
-  const isApproved = stats.totalProgress === 100 || Boolean(profile?.certificateNumber);
+  const { profile, stats, refreshProfile } = useProgress();
+  const isApproved = Boolean(profile?.certificateNumber);
   const studentName = profile?.name || 'Emprendedor';
   const approvedDate = getCertificateDisplayDate(profile);
   const certificateNumber = profile?.certificateNumber || 'WST-CPE-PENDIENTE';
+
+  useEffect(() => {
+    if (stats.totalProgress === 100 && !profile?.certificateNumber) {
+      refreshProfile();
+    }
+  }, [
+    profile?.certificateNumber,
+    refreshProfile,
+    stats.totalProgress,
+  ]);
 
   if (!isApproved) {
     return (
@@ -47,14 +59,24 @@ const CertificateScreen = () => {
           </div>
           <h2 className="mt-5 text-2xl font-black text-ink">Certificado pendiente</h2>
           <p className="mt-3 text-sm font-semibold leading-relaxed text-muted">
-            Completa todas las clases de Canva para Emprendedores para emitir tu
-            certificado digital de W Studio.
+            {stats.totalProgress === 100
+              ? 'Completaste el programa. Estamos verificando y emitiendo tu certificado en el servidor.'
+              : 'Completa todas las clases de Canva para Emprendedores para emitir tu certificado digital de W Studio.'}
           </p>
           <div className="mt-6">
             <ProgressBar label="Progreso del curso" value={stats.totalProgress} />
           </div>
-          <PrimaryButton className="mt-6" onClick={() => navigate('/app')}>
-            Continuar aprendiendo
+          <PrimaryButton
+            className="mt-6"
+            onClick={() =>
+              stats.totalProgress === 100
+                ? refreshProfile()
+                : navigate('/app')
+            }
+          >
+            {stats.totalProgress === 100
+              ? 'Revisar emisión'
+              : 'Continuar aprendiendo'}
           </PrimaryButton>
         </section>
       </div>
@@ -71,6 +93,20 @@ const CertificateScreen = () => {
           onClick={() => navigate(-1)}
         >
           <ChevronLeft className="h-8 w-8" strokeWidth={2.1} />
+        </button>
+        <button
+          aria-label="Verificar certificado"
+          className="grid h-11 w-11 place-items-center rounded-full bg-white text-violet"
+          type="button"
+          onClick={() =>
+            navigate(
+              `/verificar-certificado?numero=${encodeURIComponent(
+                certificateNumber,
+              )}`,
+            )
+          }
+        >
+          <ScanSearch className="h-5 w-5" />
         </button>
         <button
           className="inline-flex min-h-11 items-center gap-2 rounded-full bg-ink px-4 text-sm font-black text-white"
@@ -162,7 +198,7 @@ const CertificateScreen = () => {
               </p>
               <div className="mx-auto mt-3 h-px w-52 bg-gray-300" />
               <p className="mt-2 text-xs font-black uppercase tracking-[0.16em] text-muted">
-                Creado por:
+                Desarrollado con asistencia de:
               </p>
               <p className="text-sm font-black text-ink">OpenAI Codex</p>
             </div>

@@ -10,12 +10,17 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import EmailVerificationNotice from '../components/EmailVerificationNotice';
 import HotmartCheckoutButton, {
   HotmartCheckoutFallback,
 } from '../components/HotmartCheckoutButton';
 import PrimaryButton from '../components/PrimaryButton';
+import PublicFooter from '../components/PublicFooter';
 import { HOTMART_LINKS } from '../config/hotmart';
+import { SITE_CONFIG } from '../config/site';
 import { useAuth } from '../context/AuthContext';
+import { trackEvent, withAttribution } from '../services/analytics';
 
 const benefits = [
   {
@@ -37,7 +42,16 @@ const benefits = [
 
 const PurchaseScreen = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, requiresEmailVerification } = useAuth();
+
+  useEffect(() => {
+    trackEvent('view_item', {
+      currency: 'USD',
+      value: 55,
+      content_name: SITE_CONFIG.name,
+      content_type: 'product',
+    });
+  }, []);
 
   return (
     <div className="phone-shell min-h-screen overflow-hidden bg-white">
@@ -90,7 +104,11 @@ const PurchaseScreen = () => {
             </div>
           </div>
 
-          {user ? (
+          {user && requiresEmailVerification ? (
+            <div className="mt-6">
+              <EmailVerificationNotice compact />
+            </div>
+          ) : user ? (
             <div className="mt-6">
               <div className="mb-4 flex items-start gap-3 rounded-2xl border border-violet/15 bg-white p-4">
                 <Check className="mt-0.5 h-5 w-5 shrink-0 text-violet" />
@@ -163,7 +181,8 @@ const PurchaseScreen = () => {
           </p>
           <a
             className="mt-5 inline-flex items-center gap-2 text-sm font-black text-violet"
-            href={HOTMART_LINKS.salesPage}
+            href={withAttribution(HOTMART_LINKS.salesPage)}
+            onClick={() => trackEvent('view_sales_page')}
             rel="noreferrer"
             target="_blank"
           >
@@ -173,8 +192,12 @@ const PurchaseScreen = () => {
         </section>
 
         <p className="mt-7 px-8 text-center text-xs font-semibold leading-relaxed text-muted">
-          Al continuar aceptas las condiciones de compra y la garantía de 15 días
-          administradas por Hotmart.
+          Al continuar aceptas los{' '}
+          <Link className="font-black text-violet" to="/terminos">
+            términos
+          </Link>{' '}
+          y la garantía de {SITE_CONFIG.guaranteeDays} días administrada por
+          Hotmart.
         </p>
 
         <div className="mt-5 text-center">
@@ -182,6 +205,7 @@ const PurchaseScreen = () => {
             Volver al inicio de sesión
           </Link>
         </div>
+        <PublicFooter className="mt-8" />
       </main>
     </div>
   );

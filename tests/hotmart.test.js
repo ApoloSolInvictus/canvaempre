@@ -132,6 +132,7 @@ test('el endpoint informa su estado sin revelar secretos', async () => {
   assert.equal(body.ok, true);
   assert.equal(body.service, 'hotmart-webhook');
   assert.equal(typeof body.configured, 'boolean');
+  assert.equal(typeof body.alertsConfigured, 'boolean');
   assert.equal('hottok' in body, false);
 });
 

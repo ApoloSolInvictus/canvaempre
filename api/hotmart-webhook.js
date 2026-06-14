@@ -12,6 +12,10 @@ import {
   parseHotmartPayload,
   validateHotmartToken,
 } from '../server/hotmart.js';
+import {
+  alertsConfigured,
+  notifyWebhookError,
+} from '../server/alerts.js';
 
 const json = (response, status, body) => {
   response.status(status).json(body);
@@ -39,6 +43,7 @@ export default async function handler(request, response) {
           process.env.FIREBASE_ADMIN_CLIENT_EMAIL &&
           process.env.FIREBASE_ADMIN_PRIVATE_KEY,
       ),
+      alertsConfigured: alertsConfigured(),
     });
   }
 
@@ -47,6 +52,8 @@ export default async function handler(request, response) {
     return json(response, 405, { ok: false, error: 'Método no permitido.' });
   }
 
+  let eventContext = {};
+
   try {
     const payload = parseBody(request.body);
     if (!validateHotmartToken(request, payload)) {
@@ -54,6 +61,12 @@ export default async function handler(request, response) {
     }
 
     const eventData = parseHotmartPayload(payload);
+    eventContext = {
+      event: eventData.event,
+      eventId: eventData.eventId,
+      transaction: eventData.transaction,
+      productId: eventData.productId,
+    };
     if (!isExpectedProduct(eventData)) {
       return json(response, 200, { ok: true, ignored: 'product' });
     }
@@ -79,6 +92,10 @@ export default async function handler(request, response) {
     }
 
     if (!eventData.email) {
+      await notifyWebhookError(
+        new Error('El evento no contiene correo del comprador.'),
+        eventContext,
+      );
       return json(response, 422, {
         ok: false,
         error: 'El evento no contiene correo del comprador.',
@@ -163,6 +180,7 @@ export default async function handler(request, response) {
     });
   } catch (error) {
     console.error('Hotmart webhook error', error);
+    await notifyWebhookError(error, eventContext);
     return json(response, 500, {
       ok: false,
       error: 'No se pudo procesar el evento.',

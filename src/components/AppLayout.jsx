@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { ProgressProvider, useProgress } from '../context/ProgressContext';
 import PaymentRequiredScreen from '../screens/PaymentRequiredScreen';
 import BottomNavigation from './BottomNavigation';
+import EmailVerificationNotice from './EmailVerificationNotice';
 
 const AppContent = () => {
   const { profile, loading } = useProgress();
@@ -30,7 +31,15 @@ const AppContent = () => {
 };
 
 const AppLayout = () => {
-  const { user } = useAuth();
+  const { user, requiresEmailVerification } = useAuth();
+
+  if (requiresEmailVerification) {
+    return (
+      <div className="phone-shell relative overflow-hidden">
+        <EmailVerificationNotice />
+      </div>
+    );
+  }
 
   return (
     <ProgressProvider user={user}>

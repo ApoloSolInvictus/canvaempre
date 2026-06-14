@@ -13,8 +13,6 @@ const localKey = (uid) => `canva-emprende-user-${uid}`;
 
 const toArray = (value) => (Array.isArray(value) ? value : []);
 
-const uniqueValues = (...lists) => [...new Set(lists.flatMap((list) => toArray(list)))];
-
 const compactId = (value = '') =>
   value
     .replace(/[^a-zA-Z0-9]/g, '')
@@ -135,14 +133,14 @@ const normalizeProfile = (user, data = {}, defaultAccessStatus = 'active') => {
   const favoriteCourses = toArray(data.favoriteCourses);
   const stats = calculateProfileStats(completedLessons);
 
-  return applyCertificateMetadata({
+  return {
     ...baseProfile(user, defaultAccessStatus),
     ...data,
     completedLessons,
     favoriteCourses,
     currentLevel: stats.currentLevel,
     totalProgress: stats.totalProgress,
-  }, stats);
+  };
 };
 
 const readLocalProfile = (user, defaultAccessStatus = 'active') => {
@@ -161,18 +159,22 @@ const writeLocalProfile = (profile) => {
   return profile;
 };
 
-const mergeProfiles = (user, remoteProfile, localProfile) =>
-  normalizeProfile(user, {
-    ...remoteProfile,
-    completedLessons: uniqueValues(
-      remoteProfile?.completedLessons,
-      localProfile?.completedLessons,
-    ),
-    favoriteCourses: uniqueValues(
-      remoteProfile?.favoriteCourses,
-      localProfile?.favoriteCourses,
-    ),
+const requestServerCertificate = async (user) => {
+  if (typeof user.getIdToken !== 'function') return {};
+
+  const idToken = await user.getIdToken();
+  const response = await fetch('/api/certificate-issue', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${idToken}` },
   });
+  if (!response.ok) return {};
+  const data = await response.json();
+  return {
+    certificateIssuedAt: data.certificateIssuedAt,
+    certificateNumber: data.certificateNumber,
+    certificateTitle: data.certificateTitle,
+  };
+};
 
 export const fetchUserProfile = async (user) => {
   if (!user) return null;
@@ -208,7 +210,15 @@ export const fetchUserProfile = async (user) => {
         syncPending: false,
       }, 'pending_payment');
       await setDoc(userRef, {
-        ...profile,
+        uid: user.uid,
+        name: profile.name,
+        email: profile.email,
+        currentLevel: 0,
+        totalProgress: 0,
+        completedLessons: [],
+        favoriteCourses: [],
+        accessStatus: 'pending_payment',
+        syncPending: false,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       });
@@ -216,10 +226,18 @@ export const fetchUserProfile = async (user) => {
     }
 
     const remoteProfile = normalizeProfile(user, snapshot.data(), 'active');
-    const profile = {
-      ...mergeProfiles(user, remoteProfile, localProfile),
+    let profile = {
+      ...remoteProfile,
       syncPending: false,
     };
+    if (profile.totalProgress === 100 && !profile.certificateNumber) {
+      try {
+        const certificate = await requestServerCertificate(user);
+        profile = { ...profile, ...certificate };
+      } catch {
+        // El perfil sigue disponible aunque la emisión se reintente después.
+      }
+    }
     await setDoc(
       userRef,
       {
@@ -229,9 +247,6 @@ export const fetchUserProfile = async (user) => {
         favoriteCourses: profile.favoriteCourses,
         currentLevel: profile.currentLevel,
         totalProgress: profile.totalProgress,
-        certificateIssuedAt: profile.certificateIssuedAt ?? null,
-        certificateNumber: profile.certificateNumber ?? null,
-        certificateTitle: profile.certificateTitle ?? null,
         updatedAt: serverTimestamp(),
       },
       { merge: true },
@@ -257,7 +272,10 @@ export const completeLesson = async (user, lessonId) => {
     currentLevel: stats.currentLevel,
     totalProgress: stats.totalProgress,
   };
-  const certifiedProfile = applyCertificateMetadata(nextProfile, stats);
+  const certifiedProfile =
+    !isFirebaseConfigured || !db
+      ? applyCertificateMetadata(nextProfile, stats)
+      : nextProfile;
 
   if (!isFirebaseConfigured || !db || profile.syncPending) {
     return writeLocalProfile(certifiedProfile);
@@ -270,9 +288,6 @@ export const completeLesson = async (user, lessonId) => {
         completedLessons: arrayUnion(lessonId),
         currentLevel: stats.currentLevel,
         totalProgress: stats.totalProgress,
-        certificateIssuedAt: certifiedProfile.certificateIssuedAt ?? null,
-        certificateNumber: certifiedProfile.certificateNumber ?? null,
-        certificateTitle: certifiedProfile.certificateTitle ?? null,
         syncPending: false,
         updatedAt: serverTimestamp(),
       },
@@ -285,8 +300,18 @@ export const completeLesson = async (user, lessonId) => {
     });
   }
 
+  let serverCertificate = {};
+  if (stats.totalProgress === 100 && typeof user.getIdToken === 'function') {
+    try {
+      serverCertificate = await requestServerCertificate(user);
+    } catch {
+      // El progreso queda guardado y el certificado se reintentará al abrirlo.
+    }
+  }
+
   return writeLocalProfile({
     ...certifiedProfile,
+    ...serverCertificate,
     syncPending: false,
   });
 };

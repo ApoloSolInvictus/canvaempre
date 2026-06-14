@@ -2,13 +2,21 @@ import { useState } from 'react';
 import { Chrome, Mail, UserRound } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { SITE_CONFIG } from '../config/site';
 import PrimaryButton from './PrimaryButton';
 
 const AuthForm = ({ initialMode = 'login', successPath = '/app' }) => {
   const navigate = useNavigate();
-  const { register, login, loginWithGoogle, loginAsDemo, isFirebaseConfigured } =
-    useAuth();
+  const {
+    register,
+    login,
+    loginWithGoogle,
+    loginAsDemo,
+    requestPasswordReset,
+    isFirebaseConfigured,
+  } = useAuth();
   const [mode, setMode] = useState(initialMode);
+  const [resetMode, setResetMode] = useState(false);
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -16,6 +24,7 @@ const AuthForm = ({ initialMode = 'login', successPath = '/app' }) => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
 
   const updateField = (field, value) => {
     setForm((current) => ({ ...current, [field]: value }));
@@ -27,8 +36,16 @@ const AuthForm = ({ initialMode = 'login', successPath = '/app' }) => {
     event.preventDefault();
     setLoading(true);
     setError('');
+    setMessage('');
 
     try {
+      if (resetMode) {
+        await requestPasswordReset(form.email);
+        setMessage(
+          'Si existe una cuenta con ese correo, Firebase enviará un enlace para crear una nueva contraseña.',
+        );
+        return;
+      }
       if (mode === 'register') {
         await register(form);
       } else {
@@ -36,7 +53,20 @@ const AuthForm = ({ initialMode = 'login', successPath = '/app' }) => {
       }
       handleSuccess();
     } catch (currentError) {
-      setError(currentError.message || 'No se pudo iniciar sesion.');
+      const errorMessages = {
+        'auth/email-already-in-use':
+          'Ese correo ya tiene una cuenta. Prueba iniciar sesión.',
+        'auth/invalid-credential':
+          'El correo o la contraseña no son correctos.',
+        'auth/invalid-email': 'Escribe un correo válido.',
+        'auth/weak-password': 'La contraseña necesita al menos 6 caracteres.',
+        'auth/too-many-requests':
+          'Hay demasiados intentos. Espera unos minutos.',
+      };
+      setError(
+        errorMessages[currentError.code] ||
+          'No se pudo completar la solicitud. Inténtalo nuevamente.',
+      );
     } finally {
       setLoading(false);
     }
@@ -45,6 +75,7 @@ const AuthForm = ({ initialMode = 'login', successPath = '/app' }) => {
   const handleGoogle = async () => {
     setLoading(true);
     setError('');
+    setMessage('');
 
     try {
       await loginWithGoogle();
@@ -78,7 +109,12 @@ const AuthForm = ({ initialMode = 'login', successPath = '/app' }) => {
             mode === 'login' ? 'bg-white text-ink shadow-sm' : 'text-muted'
           }`}
           type="button"
-          onClick={() => setMode('login')}
+          onClick={() => {
+            setMode('login');
+            setResetMode(false);
+            setError('');
+            setMessage('');
+          }}
         >
           Login
         </button>
@@ -87,17 +123,23 @@ const AuthForm = ({ initialMode = 'login', successPath = '/app' }) => {
             mode === 'register' ? 'bg-white text-ink shadow-sm' : 'text-muted'
           }`}
           type="button"
-          onClick={() => setMode('register')}
+          onClick={() => {
+            setMode('register');
+            setResetMode(false);
+            setError('');
+            setMessage('');
+          }}
         >
           Registro
         </button>
       </div>
 
-      {mode === 'register' && (
+      {mode === 'register' && !resetMode && (
         <label className="flex min-h-[52px] items-center gap-3 rounded-3xl border border-gray-100 bg-white px-4 shadow-sm">
           <UserRound className="h-5 w-5 text-muted" />
           <input
             required
+            autoComplete="name"
             className="w-full bg-transparent py-4 text-sm font-semibold text-ink outline-none placeholder:text-muted"
             placeholder="Nombre del estudiante"
             value={form.name}
@@ -110,6 +152,7 @@ const AuthForm = ({ initialMode = 'login', successPath = '/app' }) => {
         <Mail className="h-5 w-5 text-muted" />
         <input
           required
+          autoComplete="email"
           className="w-full bg-transparent py-4 text-sm font-semibold text-ink outline-none placeholder:text-muted"
           placeholder="Email"
           type="email"
@@ -118,24 +161,46 @@ const AuthForm = ({ initialMode = 'login', successPath = '/app' }) => {
         />
       </label>
 
-      <label className="flex min-h-[52px] items-center gap-3 rounded-3xl border border-gray-100 bg-white px-4 shadow-sm">
-        <span className="grid h-5 w-5 place-items-center rounded-full bg-gray-300 text-[10px] font-black text-white">
-          *
-        </span>
-        <input
-          required
-          className="w-full bg-transparent py-4 text-sm font-semibold text-ink outline-none placeholder:text-muted"
-          minLength={6}
-          placeholder="Contrasena"
-          type="password"
-          value={form.password}
-          onChange={(event) => updateField('password', event.target.value)}
-        />
-      </label>
+      {!resetMode && (
+        <label className="flex min-h-[52px] items-center gap-3 rounded-3xl border border-gray-100 bg-white px-4 shadow-sm">
+          <span className="grid h-5 w-5 place-items-center rounded-full bg-gray-300 text-[10px] font-black text-white">
+            *
+          </span>
+          <input
+            required
+            autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
+            className="w-full bg-transparent py-4 text-sm font-semibold text-ink outline-none placeholder:text-muted"
+            minLength={6}
+            placeholder="Contraseña"
+            type="password"
+            value={form.password}
+            onChange={(event) => updateField('password', event.target.value)}
+          />
+        </label>
+      )}
+
+      {mode === 'login' && (
+        <button
+          className="w-full text-right text-xs font-black text-violet"
+          type="button"
+          onClick={() => {
+            setResetMode((current) => !current);
+            setError('');
+            setMessage('');
+          }}
+        >
+          {resetMode ? 'Volver al inicio de sesión' : '¿Olvidaste tu contraseña?'}
+        </button>
+      )}
 
       {error && (
         <p className="rounded-3xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-600">
           {error}
+        </p>
+      )}
+      {message && (
+        <p className="rounded-3xl bg-emerald-50 px-4 py-3 text-sm font-semibold leading-relaxed text-emerald-700">
+          {message}
         </p>
       )}
 
@@ -147,19 +212,39 @@ const AuthForm = ({ initialMode = 'login', successPath = '/app' }) => {
       )}
 
       <PrimaryButton loading={loading} type="submit">
-        {mode === 'register' ? 'Crear cuenta' : 'Entrar'}
+        {resetMode
+          ? 'Enviar enlace'
+          : mode === 'register'
+            ? 'Crear cuenta'
+            : 'Entrar'}
       </PrimaryButton>
 
-      <PrimaryButton loading={loading} type="button" variant="secondary" onClick={handleGoogle}>
-        <Chrome className="h-4 w-4" />
-        Continuar con Google
-      </PrimaryButton>
+      {!resetMode && (
+        <PrimaryButton
+          loading={loading}
+          type="button"
+          variant="secondary"
+          onClick={handleGoogle}
+        >
+          <Chrome className="h-4 w-4" />
+          Continuar con Google
+        </PrimaryButton>
+      )}
 
       {!isFirebaseConfigured && (
         <PrimaryButton loading={loading} type="button" variant="ghost" onClick={handleDemo}>
           Probar modo demo
         </PrimaryButton>
       )}
+      <p className="text-center text-xs font-semibold leading-relaxed text-muted">
+        ¿Necesitas ayuda?{' '}
+        <a
+          className="font-black text-violet"
+          href={`mailto:${SITE_CONFIG.supportEmail}`}
+        >
+          {SITE_CONFIG.supportEmail}
+        </a>
+      </p>
     </form>
   );
 };

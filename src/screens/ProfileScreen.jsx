@@ -2,6 +2,7 @@ import {
   Award,
   BookCheck,
   FileBadge2,
+  Headphones,
   LogOut,
   ShieldCheck,
   UserRound,
@@ -17,7 +18,7 @@ const ProfileScreen = () => {
   const navigate = useNavigate();
   const { logout, isFirebaseConfigured } = useAuth();
   const { profile, stats } = useProgress();
-  const certificateReady = stats.totalProgress === 100 || Boolean(profile?.certificateNumber);
+  const certificateReady = Boolean(profile?.certificateNumber);
 
   return (
     <div className="space-y-5">
@@ -72,7 +73,9 @@ const ProfileScreen = () => {
               <p className="text-xs font-semibold text-muted">
                 {certificateReady
                   ? 'Disponible para guardar como PDF'
-                  : `Pendiente: ${stats.totalProgress}% completado`}
+                  : stats.totalProgress === 100
+                    ? 'Completado: certificado en emisión'
+                    : `Pendiente: ${stats.totalProgress}% completado`}
               </p>
             </div>
           </div>
@@ -82,7 +85,11 @@ const ProfileScreen = () => {
             onClick={() => navigate('/app/certificado')}
           >
             <FileBadge2 className="h-5 w-5" />
-            {certificateReady ? 'Ver certificado' : 'Ver progreso del certificado'}
+            {certificateReady
+              ? 'Ver certificado'
+              : stats.totalProgress === 100
+                ? 'Revisar emisión'
+                : 'Ver progreso del certificado'}
           </PrimaryButton>
         </div>
         <div className="flex items-center gap-3 rounded-3xl border border-gray-100 bg-white p-4 shadow-sm">
@@ -99,6 +106,13 @@ const ProfileScreen = () => {
         <PrimaryButton variant="secondary" onClick={logout}>
           <LogOut className="h-4 w-4" />
           Cerrar sesion
+        </PrimaryButton>
+        <PrimaryButton
+          variant="ghost"
+          onClick={() => navigate('/soporte')}
+        >
+          <Headphones className="h-4 w-4" />
+          Soporte y ayuda
         </PrimaryButton>
       </section>
     </div>

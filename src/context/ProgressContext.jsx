@@ -12,7 +12,6 @@ import {
   fetchUserProfile,
   toggleFavoriteCourse,
 } from '../services/progressService';
-import { seedCourseCatalog } from '../services/courseCatalogService';
 
 const ProgressContext = createContext(null);
 
@@ -65,8 +64,6 @@ export const ProgressProvider = ({ user, children }) => {
     };
 
     load();
-    seedCourseCatalog().catch(() => undefined);
-
     return () => {
       isMounted = false;
     };

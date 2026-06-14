@@ -1,6 +1,7 @@
 import { Navigate, useSearchParams } from 'react-router-dom';
 import AuthForm from '../components/AuthForm';
 import MockupVisual from '../components/MockupVisual';
+import PublicFooter from '../components/PublicFooter';
 import { useAuth } from '../context/AuthContext';
 
 const LoginScreen = () => {
@@ -37,6 +38,7 @@ const LoginScreen = () => {
         <MockupVisual variant="editor" />
       </div>
       <AuthForm initialMode={initialMode} successPath={successPath} />
+      <PublicFooter className="-mx-5 mt-8" />
     </div>
   );
 };

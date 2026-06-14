@@ -1,6 +1,13 @@
-import { Bell, ChevronRight } from 'lucide-react';
+import {
+  Award,
+  Bell,
+  BookOpenCheck,
+  ChevronRight,
+  Sparkles,
+} from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import ActionSheet from '../components/ActionSheet';
 import CourseCard from '../components/CourseCard';
 import LevelCard from '../components/LevelCard';
 import ProgressBar from '../components/ProgressBar';
@@ -16,6 +23,7 @@ const HomeScreen = () => {
   const navigate = useNavigate();
   const { profile, loading, stats, toggleFavorite } = useProgress();
   const [query, setQuery] = useState('');
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const completedLessons = profile?.completedLessons ?? [];
   const favoriteCourses = profile?.favoriteCourses ?? [];
   const next = getNextLesson(completedLessons);
@@ -55,6 +63,7 @@ const HomeScreen = () => {
           aria-label="Notificaciones"
           className="relative mt-1 grid h-12 w-12 shrink-0 place-items-center rounded-full bg-white text-ink"
           type="button"
+          onClick={() => setNotificationsOpen(true)}
         >
           <Bell className="h-8 w-8" strokeWidth={2.2} />
           <span className="absolute right-1 top-1 grid h-6 w-6 place-items-center rounded-full bg-violet text-xs font-black text-white">
@@ -72,7 +81,11 @@ const HomeScreen = () => {
       <section className="space-y-5 px-8">
         <div className="flex items-center justify-between">
           <h2 className="text-[1.35rem] font-black text-ink">Contin&uacute;a aprendiendo</h2>
-          <button className="text-lg font-bold text-violet" type="button">
+          <button
+            className="text-lg font-bold text-violet"
+            type="button"
+            onClick={() => navigate('/app/mis-clases')}
+          >
             Ver todo
           </button>
         </div>
@@ -118,7 +131,11 @@ const HomeScreen = () => {
       <section className="space-y-5 px-8">
         <div className="flex items-center justify-between">
           <h2 className="text-[1.35rem] font-black text-ink">Ruta de aprendizaje</h2>
-          <button className="text-lg font-bold text-violet" type="button">
+          <button
+            className="text-lg font-bold text-violet"
+            type="button"
+            onClick={() => navigate('/app/ruta')}
+          >
             Ver ruta
           </button>
         </div>
@@ -147,6 +164,63 @@ const HomeScreen = () => {
           />
         ))}
       </section>
+      <ActionSheet
+        description="Resumen de tu progreso y próximos pasos."
+        open={notificationsOpen}
+        title="Notificaciones"
+        onClose={() => setNotificationsOpen(false)}
+      >
+        {[
+          {
+            icon: BookOpenCheck,
+            title: next ? 'Tu siguiente clase está lista' : 'Ruta completada',
+            text: next
+              ? `${next.lesson.title} · Nivel ${next.course.level}`
+              : 'Has completado las cuarenta clases.',
+            action: next
+              ? () => navigate(`/app/leccion/${next.lesson.id}`)
+              : () => navigate('/app/perfil'),
+          },
+          {
+            icon: Sparkles,
+            title: 'Recursos descargables disponibles',
+            text: 'Cada nivel incluye tres PDFs prácticos.',
+            action: () => navigate('/app/mis-clases'),
+          },
+          {
+            icon: Award,
+            title:
+              stats.totalProgress === 100
+                ? 'Tu certificado está disponible'
+                : `Certificado al ${stats.totalProgress}%`,
+            text:
+              stats.totalProgress === 100
+                ? 'Ya puedes guardarlo como PDF.'
+                : 'Completa la ruta para desbloquearlo.',
+            action: () => navigate('/app/certificado'),
+          },
+        ].map(({ icon: Icon, title, text, action }) => (
+          <button
+            className="flex w-full gap-3 rounded-2xl border border-gray-100 p-4 text-left"
+            key={title}
+            type="button"
+            onClick={() => {
+              setNotificationsOpen(false);
+              action();
+            }}
+          >
+            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-violet/10 text-violet">
+              <Icon className="h-5 w-5" />
+            </span>
+            <span>
+              <span className="block text-sm font-black text-ink">{title}</span>
+              <span className="mt-1 block text-xs font-semibold leading-relaxed text-muted">
+                {text}
+              </span>
+            </span>
+          </button>
+        ))}
+      </ActionSheet>
     </div>
   );
 };

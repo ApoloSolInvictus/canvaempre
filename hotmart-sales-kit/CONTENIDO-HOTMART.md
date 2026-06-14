@@ -19,7 +19,7 @@ QUIERO CREAR DISEÑOS PROFESIONALES
 
 **Texto debajo del botón**
 
-Pago único de US$55 · Acceso inmediato · Garantía de 15 días
+Pago único de US$55 · Acceso inmediato · Garantía de 7 días
 
 ## 2. Sobre el contenido
 
@@ -126,16 +126,16 @@ Latinoamérica a convertir sus ideas en una comunicación visual más clara,
 coherente y profesional.
 
 El programa reúne un método progresivo, proyectos aplicados y una plataforma
-digital desarrollada por W Studio con apoyo tecnológico de OpenAI Codex. El
+digital desarrollada por W Studio con asistencia tecnológica de OpenAI Codex. El
 objetivo es que cada estudiante termine el curso con materiales que pueda usar
 en su negocio, no solamente con conocimientos teóricos.
 
 ## 9. Garantía
 
-### Pruébalo durante 15 días
+### Pruébalo durante 7 días
 
 Queremos que tomes esta decisión con tranquilidad. Después de realizar la
-compra tendrás 15 días para explorar el programa. Si dentro de ese plazo
+compra tendrás 7 días para explorar el programa. Si dentro de ese plazo
 consideras que no es para ti, podrás solicitar el reembolso según las
 condiciones de garantía de Hotmart.
 
@@ -173,7 +173,7 @@ corresponda, podrás adaptar el ejercicio utilizando opciones gratuitas.
 
 ### ¿Cómo funciona el plazo de garantía?
 
-Dispones de 15 días después de la compra para solicitar el reembolso conforme a
+Dispones de 7 días después de la compra para solicitar el reembolso conforme a
 las condiciones de Hotmart. La solicitud se realiza desde la plataforma donde
 procesaste el pago.
 
@@ -224,7 +224,8 @@ presentaciones para tu negocio. 40 clases, recursos prácticos y certificado.
 ## 13. Aviso de marca
 
 Canva para Emprender es un programa educativo independiente creado por
-W Studio. No está afiliado, patrocinado ni administrado por Canva.
+W Studio. No está afiliado, patrocinado, autorizado ni administrado por Canva
+Pty Ltd. Canva y sus marcas pertenecen a sus respectivos propietarios.
 
 ## 14. Dónde subir cada imagen
 

@@ -1,4 +1,6 @@
 User-agent: *
 Allow: /
+Disallow: /api/
+Disallow: /app/
 
 Sitemap: https://canvaempren.wstudio3d.com/sitemap.xml

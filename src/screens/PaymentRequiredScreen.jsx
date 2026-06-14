@@ -11,6 +11,7 @@ import HotmartCheckoutButton, {
 import PrimaryButton from '../components/PrimaryButton';
 import { useAuth } from '../context/AuthContext';
 import { useProgress } from '../context/ProgressContext';
+import { SITE_CONFIG } from '../config/site';
 
 const PaymentRequiredScreen = () => {
   const { logout } = useAuth();
@@ -47,7 +48,7 @@ const PaymentRequiredScreen = () => {
               <p className="mt-1 text-4xl font-black text-ink">US$55</p>
             </div>
             <span className="rounded-full bg-emerald-50 px-3 py-2 text-xs font-black text-emerald-700">
-              15 días de garantía
+              {SITE_CONFIG.guaranteeDays} días de garantía
             </span>
           </div>
           <div className="mt-5">

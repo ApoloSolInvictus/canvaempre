@@ -28,7 +28,7 @@ export default async function handler(request, response) {
 
     const claims = await verifyFirebaseIdToken(token);
     const email = normalizeEmail(claims.email ?? '');
-    if (!email || claims.email_verified === false) {
+    if (!email || claims.email_verified !== true) {
       return json(response, 403, {
         ok: false,
         error: 'El perfil necesita un correo verificado.',
