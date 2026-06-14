@@ -183,6 +183,20 @@ export const fetchUserProfile = async (user) => {
   }
 
   try {
+    if (typeof user.getIdToken === 'function') {
+      try {
+        const idToken = await user.getIdToken();
+        await fetch('/api/hotmart-access', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${idToken}`,
+          },
+        });
+      } catch {
+        // Firestore sigue siendo la fuente de acceso si la sincronización falla.
+      }
+    }
+
     const localProfile = readLocalProfile(user, 'pending_payment');
     const userRef = doc(db, 'users', user.uid);
     const snapshot = await getDoc(userRef);

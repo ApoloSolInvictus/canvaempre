@@ -173,7 +173,7 @@ const PurchaseScreen = () => {
         </section>
 
         <p className="mt-7 px-8 text-center text-xs font-semibold leading-relaxed text-muted">
-          Al continuar aceptas las condiciones de compra y la garantía de 7 días
+          Al continuar aceptas las condiciones de compra y la garantía de 15 días
           administradas por Hotmart.
         </p>
 

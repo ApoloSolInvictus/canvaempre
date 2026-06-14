@@ -47,7 +47,7 @@ const PaymentRequiredScreen = () => {
               <p className="mt-1 text-4xl font-black text-ink">US$55</p>
             </div>
             <span className="rounded-full bg-emerald-50 px-3 py-2 text-xs font-black text-emerald-700">
-              7 días de garantía
+              15 días de garantía
             </span>
           </div>
           <div className="mt-5">
@@ -94,4 +94,3 @@ const PaymentRequiredScreen = () => {
 };
 
 export default PaymentRequiredScreen;
-

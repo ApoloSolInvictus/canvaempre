@@ -19,7 +19,7 @@ QUIERO CREAR DISEÑOS PROFESIONALES
 
 **Texto debajo del botón**
 
-Pago único de US$55 · Acceso inmediato · Garantía de 7 días
+Pago único de US$55 · Acceso inmediato · Garantía de 15 días
 
 ## 2. Sobre el contenido
 
@@ -132,10 +132,10 @@ en su negocio, no solamente con conocimientos teóricos.
 
 ## 9. Garantía
 
-### Pruébalo durante 7 días
+### Pruébalo durante 15 días
 
 Queremos que tomes esta decisión con tranquilidad. Después de realizar la
-compra tendrás 7 días para explorar el programa. Si dentro de ese plazo
+compra tendrás 15 días para explorar el programa. Si dentro de ese plazo
 consideras que no es para ti, podrás solicitar el reembolso según las
 condiciones de garantía de Hotmart.
 
@@ -173,7 +173,7 @@ corresponda, podrás adaptar el ejercicio utilizando opciones gratuitas.
 
 ### ¿Cómo funciona el plazo de garantía?
 
-Dispones de 7 días después de la compra para solicitar el reembolso conforme a
+Dispones de 15 días después de la compra para solicitar el reembolso conforme a
 las condiciones de Hotmart. La solicitud se realiza desde la plataforma donde
 procesaste el pago.
 

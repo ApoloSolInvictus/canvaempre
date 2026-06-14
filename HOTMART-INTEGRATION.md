@@ -27,28 +27,65 @@ del pago pendiente.
 6. Los perfiles nuevos quedan con `accessStatus: pending_payment`.
 7. Los alumnos existentes sin ese campo conservan su acceso.
 
-## Activación manual temporal
+## Activación automática
 
-Hasta instalar el Webhook, confirma la compra en Hotmart y abre Firebase:
+La ruta `api/hotmart-webhook.js` procesa los eventos de Hotmart:
 
-1. Ve a Firestore Database.
-2. Abre la colección `users`.
-3. Localiza el documento por el correo utilizado en Hotmart.
-4. Cambia `accessStatus` de `pending_payment` a `active`.
-5. El alumno pulsa `Ya pagué: actualizar acceso`.
+- `PURCHASE_APPROVED`, `PURCHASE_COMPLETE`: acceso `active`.
+- `PURCHASE_REFUNDED`, `PURCHASE_CHARGEBACK`: acceso `revoked`.
+- Cancelaciones y vencimientos definitivos: acceso `revoked`.
 
-Para un reembolso o contracargo, cambia el valor a `revoked`.
+Cada compra se guarda también por correo en `hotmartEntitlements`. La ruta
+`api/hotmart-access.js` permite reclamar automáticamente una compra si el
+Webhook llegó antes de que el comprador creara su perfil.
 
-## Pendiente para automatizar la activación
+## Variables privadas de Vercel
 
-El widget abre y procesa el pago, pero no acredita por sí mismo el perfil. La
-aplicación ya bloquea perfiles nuevos; para activar o revocar automáticamente
-falta configurar:
+Configura en Vercel para Production y Preview:
 
-1. Webhook de Hotmart con eventos de compra aprobada, reembolso y contracargo.
-2. Token secreto del Webhook como variable privada de Vercel.
-3. Función de servidor que relacione el correo del comprador con Firebase.
-4. Actualización administrativa de `accessStatus` en Firestore.
+- `FIREBASE_ADMIN_PROJECT_ID`
+- `FIREBASE_ADMIN_CLIENT_EMAIL`
+- `FIREBASE_ADMIN_PRIVATE_KEY`
+- `HOTMART_HOTTOK`
+- `HOTMART_PRODUCT_ID` (recomendado)
+- `HOTMART_OFFER_CODE` (opcional)
+
+No agregues el prefijo `VITE_`: estas credenciales deben existir solo en el
+servidor.
+
+Los tres valores `FIREBASE_ADMIN_*` salen del JSON generado en Firebase:
+Configuración del proyecto > Cuentas de servicio > Generar nueva clave privada.
+Guarda la clave solo en Vercel; nunca la subas al repositorio.
+
+`HOTMART_PRODUCT_ID` debe contener el valor numérico que aparece en
+`data.product.id` dentro del historial del Webhook. Después de agregar o
+modificar variables, vuelve a desplegar el proyecto en Vercel.
+
+## Configuración en Hotmart
+
+1. Abre Herramientas y selecciona Webhook (API y notificaciones).
+2. Registra la URL:
+   `https://canvaempren.wstudio3d.com/api/hotmart-webhook`
+3. Selecciona el producto Canva Emprende.
+4. Marca compra aprobada, compra completada, compra reembolsada, chargeback,
+   compra cancelada y compra con plazo vencido.
+5. Copia el Hottok de Hotmart en la variable privada `HOTMART_HOTTOK`.
+6. Envía una prueba desde el Historial del Webhook y confirma respuesta 200.
 
 Las reglas de `firestore.rules` impiden que el alumno cambie por sí mismo los
-campos de pago. Deben desplegarse por Firebase CLI o copiarse en la consola.
+campos de pago.
+
+## Verificación
+
+1. Abre
+   `https://canvaempren.wstudio3d.com/api/hotmart-webhook`.
+2. Confirma una respuesta JSON con `ok: true` y `configured: true`.
+3. Haz una compra real de prueba con el mismo correo usado en el perfil.
+4. Confirma en Firestore los documentos de `hotmartEntitlements`,
+   `hotmartWebhookEvents` y el campo `users/{uid}.accessStatus: active`.
+5. Reenvía el mismo evento desde Hotmart. Debe responder 200 sin duplicar el
+   acceso.
+
+El correo de compra y el correo del perfil deben coincidir. Si el Webhook llega
+antes del registro, el alumno recibe el acceso al iniciar sesión por primera
+vez con ese mismo correo.
