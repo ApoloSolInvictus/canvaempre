@@ -13,6 +13,19 @@ service cloud.firestore {
     match /users/{userId} {
       allow read: if ownsProfile(userId);
       allow create: if ownsProfile(userId)
+        && request.resource.data.keys().hasOnly([
+          'uid',
+          'name',
+          'email',
+          'currentLevel',
+          'totalProgress',
+          'completedLessons',
+          'favoriteCourses',
+          'accessStatus',
+          'syncPending',
+          'createdAt',
+          'updatedAt'
+        ])
         && request.resource.data.uid == userId
         && request.resource.data.email == request.auth.token.email
         && request.resource.data.accessStatus == 'pending_payment'
@@ -26,33 +39,26 @@ service cloud.firestore {
           'certificateTitle'
         ]);
       allow update: if ownsProfile(userId)
-        && !request.resource.data.diff(resource.data).affectedKeys().hasAny([
-          'uid',
-          'email',
-          'accessStatus',
-          'paymentProvider',
-          'paymentTransaction',
-          'paidAt',
-          'refundedAt',
-          'certificateIssuedAt',
-          'certificateNumber',
-          'certificateTitle'
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'name',
+          'favoriteCourses',
+          'updatedAt'
         ]);
       allow delete: if false;
     }
 
     match /courses/{courseId} {
-      allow read: if true;
+      allow read, write: if false;
       allow write: if false;
     }
 
     match /lessons/{lessonId} {
-      allow read: if true;
+      allow read, write: if false;
       allow write: if false;
     }
 
     match /certificates/{certificateId} {
-      allow read: if true;
+      allow read, write: if false;
       allow write: if false;
     }
 

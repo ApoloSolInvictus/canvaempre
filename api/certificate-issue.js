@@ -3,12 +3,12 @@ import {
   setDocument,
   updateDocument,
 } from '../server/firestore-rest.js';
-import { verifyFirebaseIdToken } from '../server/firebase-token.js';
+import { requireActiveUser } from '../server/authorized-user.js';
 import {
   buildCertificateNumber,
   certificateDocumentId,
 } from '../server/certificate.js';
-import { allLessons } from '../src/data/courses.js';
+import { allLessons } from '../server/course-content.js';
 
 const json = (response, status, body) => {
   response.status(status).json(body);
@@ -21,30 +21,7 @@ export default async function handler(request, response) {
   }
 
   try {
-    const authorization = request.headers.authorization ?? '';
-    const token = authorization.startsWith('Bearer ')
-      ? authorization.slice(7)
-      : '';
-    if (!token) {
-      return json(response, 401, { ok: false, error: 'Falta autenticación.' });
-    }
-
-    const claims = await verifyFirebaseIdToken(token);
-    if (!claims.email || claims.email_verified !== true) {
-      return json(response, 403, {
-        ok: false,
-        error: 'El correo debe estar verificado.',
-      });
-    }
-
-    const userPath = `users/${claims.sub}`;
-    const user = await getDocument(userPath);
-    if (!user || user.data.accessStatus !== 'active') {
-      return json(response, 403, {
-        ok: false,
-        error: 'El perfil no tiene acceso activo.',
-      });
-    }
+    const { claims, path: userPath, user } = await requireActiveUser(request);
 
     if (user.data.certificateNumber) {
       const existingNumber = user.data.certificateNumber;
@@ -121,9 +98,9 @@ export default async function handler(request, response) {
     });
   } catch (error) {
     console.error('Certificate issue error', error);
-    return json(response, 500, {
+    return json(response, error.status ?? 500, {
       ok: false,
-      error: 'No se pudo emitir el certificado.',
+      error: error.status ? error.message : 'No se pudo emitir el certificado.',
     });
   }
 }

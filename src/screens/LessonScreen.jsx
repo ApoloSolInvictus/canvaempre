@@ -14,6 +14,7 @@ import ActionSheet from '../components/ActionSheet';
 import PrimaryButton from '../components/PrimaryButton';
 import ProgressBar from '../components/ProgressBar';
 import { useProgress } from '../context/ProgressContext';
+import { useAuth } from '../context/AuthContext';
 import {
   getCourseForLesson,
   getLessonById,
@@ -24,15 +25,20 @@ import {
   isCourseLocked,
 } from '../services/progressService';
 import { shareContent } from '../services/share';
+import { fetchLessonContent } from '../services/protectedContent';
 
 const LessonScreen = () => {
   const { lessonId } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { profile, markLessonComplete } = useProgress();
   const [isCompleting, setIsCompleting] = useState(false);
   const [optimisticComplete, setOptimisticComplete] = useState(false);
   const [error, setError] = useState('');
   const [optionsOpen, setOptionsOpen] = useState(false);
+  const [lessonContent, setLessonContent] = useState(null);
+  const [contentLoading, setContentLoading] = useState(true);
+  const [contentError, setContentError] = useState('');
   const lesson = getLessonById(lessonId);
   const course = getCourseForLesson(lessonId);
   const completedLessons = profile?.completedLessons ?? [];
@@ -41,6 +47,32 @@ const LessonScreen = () => {
     setOptimisticComplete(false);
     setError('');
   }, [lessonId]);
+
+  useEffect(() => {
+    let active = true;
+    setLessonContent(null);
+    setContentError('');
+    setContentLoading(true);
+
+    fetchLessonContent(user, lessonId)
+      .then((content) => {
+        if (active) setLessonContent(content);
+      })
+      .catch((currentError) => {
+        if (active) {
+          setContentError(
+            currentError.message || 'No se pudo cargar la clase.',
+          );
+        }
+      })
+      .finally(() => {
+        if (active) setContentLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [lessonId, user]);
 
   if (!lesson || !course) return <Navigate replace to="/app" />;
 
@@ -145,6 +177,25 @@ const LessonScreen = () => {
             Volver al curso
           </PrimaryButton>
         </section>
+      ) : contentLoading ? (
+        <section className="px-8">
+          <div className="grid min-h-48 place-items-center rounded-[1.35rem] bg-violet/5">
+            <div className="h-10 w-10 animate-spin rounded-full border-4 border-violet/20 border-t-violet" />
+          </div>
+        </section>
+      ) : contentError || !lessonContent ? (
+        <section className="px-8">
+          <div className="rounded-[1.35rem] bg-red-50 p-5 text-center">
+            <p className="text-sm font-bold text-red-600">{contentError}</p>
+            <PrimaryButton
+              className="mt-4"
+              variant="secondary"
+              onClick={() => window.location.reload()}
+            >
+              Reintentar
+            </PrimaryButton>
+          </div>
+        </section>
       ) : (
         <>
           <section className="px-8">
@@ -153,7 +204,7 @@ const LessonScreen = () => {
                 Contenido de la clase
               </p>
               <p className="mt-4 text-lg font-medium leading-relaxed text-ink">
-                {lesson.summary}
+                {lessonContent.summary}
               </p>
             </div>
           </section>
@@ -164,7 +215,7 @@ const LessonScreen = () => {
                 En esta lecci&oacute;n aprender&aacute;s a:
               </h2>
               <ul className="mt-6 space-y-5">
-                {lesson.goals.map((goal) => (
+                {lessonContent.goals.map((goal) => (
                   <li key={goal} className="flex gap-4 text-xl font-medium leading-snug text-ink">
                     <span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-full bg-violet text-white">
                       <Check className="h-5 w-5" strokeWidth={3} />
@@ -180,7 +231,7 @@ const LessonScreen = () => {
             <div className="rounded-[1.35rem] bg-violet/5 p-5">
               <h2 className="text-2xl font-black text-ink">Paso a paso</h2>
               <ol className="mt-5 space-y-4">
-                {lesson.steps.map((step, index) => (
+                {lessonContent.steps.map((step, index) => (
                   <li key={step} className="flex gap-4 text-base font-medium leading-relaxed text-ink">
                     <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-white text-sm font-black text-violet shadow-sm">
                       {index + 1}
@@ -198,7 +249,7 @@ const LessonScreen = () => {
                 Práctica guiada
               </p>
               <p className="mt-3 text-base font-medium leading-relaxed text-ink">
-                {lesson.practice}
+                {lessonContent.practice}
               </p>
             </div>
             <div className="rounded-[1.35rem] border border-gray-200 bg-white p-5">
@@ -206,7 +257,7 @@ const LessonScreen = () => {
                 Tarea del módulo
               </p>
               <p className="mt-3 text-base font-medium leading-relaxed text-ink">
-                {lesson.assignment}
+                {lessonContent.assignment}
               </p>
             </div>
           </section>
@@ -259,7 +310,7 @@ const LessonScreen = () => {
             try {
               await shareContent({
                 title: lesson.title,
-                text: lesson.summary,
+                text: lessonContent?.summary || course.description,
                 url: `${window.location.origin}/comprar`,
                 contentType: 'lesson',
               });

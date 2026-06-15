@@ -10,28 +10,72 @@ import {
   Play,
   Share2,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import LessonItem from '../components/LessonItem';
 import MockupVisual from '../components/MockupVisual';
 import PrimaryButton from '../components/PrimaryButton';
 import { useProgress } from '../context/ProgressContext';
+import { useAuth } from '../context/AuthContext';
 import { getCourseById } from '../data/courses';
 import {
   isCourseLocked,
 } from '../services/progressService';
 import { trackEvent } from '../services/analytics';
 import { shareContent } from '../services/share';
+import {
+  downloadCourseResource,
+  fetchCourseResources,
+} from '../services/protectedContent';
 
 const CourseDetailScreen = () => {
   const { courseId } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [tab, setTab] = useState('lessons');
   const [shareMessage, setShareMessage] = useState('');
+  const [resources, setResources] = useState([]);
+  const [resourcesLoading, setResourcesLoading] = useState(false);
+  const [resourcesError, setResourcesError] = useState('');
+  const [downloadingResource, setDownloadingResource] = useState(null);
   const { profile, toggleFavorite } = useProgress();
   const course = getCourseById(courseId);
   const completedLessons = profile?.completedLessons ?? [];
   const favoriteCourses = profile?.favoriteCourses ?? [];
+
+  useEffect(() => {
+    setResources([]);
+    setResourcesError('');
+    setDownloadingResource(null);
+  }, [courseId]);
+
+  useEffect(() => {
+    if (!course || tab !== 'resources' || resources.length) {
+      return;
+    }
+
+    let active = true;
+    setResourcesLoading(true);
+    setResourcesError('');
+    fetchCourseResources(user, course.id)
+      .then((nextResources) => {
+        if (active) setResources(nextResources);
+      })
+      .catch((currentError) => {
+        if (active) {
+          setResourcesError(
+            currentError.message || 'No se pudieron cargar los recursos.',
+          );
+        }
+      })
+      .finally(() => {
+        if (active) setResourcesLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [course, resources.length, tab, user]);
 
   if (!course) return <Navigate replace to="/app" />;
 
@@ -181,7 +225,17 @@ const CourseDetailScreen = () => {
         </section>
       ) : (
         <section className="space-y-3 px-8">
-          {course.resources.map((resource) => (
+          {resourcesLoading && (
+            <div className="grid min-h-48 place-items-center">
+              <div className="h-10 w-10 animate-spin rounded-full border-4 border-violet/20 border-t-violet" />
+            </div>
+          )}
+          {resourcesError && (
+            <p className="rounded-2xl bg-red-50 p-4 text-sm font-bold text-red-600">
+              {resourcesError}
+            </p>
+          )}
+          {resources.map((resource) => (
             <div
               key={resource.title}
               className="rounded-[1.35rem] border border-gray-200 bg-white p-5 text-ink"
@@ -218,20 +272,39 @@ const CourseDetailScreen = () => {
                   {resource.useCase}
                 </p>
               </div>
-              <a
+              <button
                 className="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-violet px-4 text-sm font-black text-white"
-                download
-                href={resource.downloadUrl}
-                onClick={() =>
-                  trackEvent('resource_download', {
-                    course_id: course.id,
-                    resource_name: resource.title,
-                  })
-                }
+                disabled={downloadingResource === resource.index}
+                type="button"
+                onClick={async () => {
+                  setDownloadingResource(resource.index);
+                  setResourcesError('');
+                  try {
+                    await downloadCourseResource({
+                      user,
+                      courseId: course.id,
+                      resourceIndex: resource.index,
+                      fileName: `${course.id}-recurso-${resource.index + 1}.pdf`,
+                    });
+                    trackEvent('resource_download', {
+                      course_id: course.id,
+                      resource_name: resource.title,
+                    });
+                  } catch (currentError) {
+                    setResourcesError(
+                      currentError.message ||
+                        'No se pudo descargar el recurso.',
+                    );
+                  } finally {
+                    setDownloadingResource(null);
+                  }
+                }}
               >
                 <Download className="h-5 w-5" />
-                Descargar PDF
-              </a>
+                {downloadingResource === resource.index
+                  ? 'Preparando...'
+                  : 'Descargar PDF'}
+              </button>
             </div>
           ))}
         </section>

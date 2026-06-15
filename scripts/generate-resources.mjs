@@ -6,10 +6,10 @@ import {
   StandardFonts,
   rgb,
 } from 'pdf-lib';
-import { courses } from '../src/data/courses.js';
+import { courses } from '../server/course-content.js';
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
-const outputDirectory = join(root, 'public', 'recursos');
+const outputDirectory = join(root, 'private', 'recursos');
 const logoPath = join(root, 'public', 'w-studio-logo.png');
 
 const colors = {
@@ -272,4 +272,3 @@ console.log(
     0,
   )} recursos en ${outputDirectory}`,
 );
-

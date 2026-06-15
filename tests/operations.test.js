@@ -8,6 +8,34 @@ import {
   buildCertificateNumber,
   certificateDocumentId,
 } from '../server/certificate.js';
+import lessonContentHandler from '../api/lesson-content.js';
+import courseResourcesHandler from '../api/course-resources.js';
+import progressCompleteHandler from '../api/progress-complete.js';
+import resourceDownloadHandler from '../api/resource-download.js';
+
+const createJsonResponse = () => {
+  let statusCode = 0;
+  let body = null;
+
+  return {
+    response: {
+      setHeader() {},
+      status(code) {
+        statusCode = code;
+        return this;
+      },
+      json(value) {
+        body = value;
+        return this;
+      },
+      send(value) {
+        body = value;
+        return this;
+      },
+    },
+    result: () => ({ statusCode, body }),
+  };
+};
 
 test('genera números de certificado estables sin exponer el uid', () => {
   const issuedAt = new Date('2026-06-14T12:00:00.000Z');
@@ -48,3 +76,38 @@ test('envía alertas operativas sin datos personales', async () => {
   assert.equal(body.text.includes('@'), false);
 });
 
+test('protege lecciones, recursos, descargas y progreso sin sesión', async () => {
+  const endpoints = [
+    {
+      handler: lessonContentHandler,
+      request: { method: 'GET', headers: {}, query: { id: 'lesson' } },
+    },
+    {
+      handler: courseResourcesHandler,
+      request: { method: 'GET', headers: {}, query: { courseId: 'course' } },
+    },
+    {
+      handler: resourceDownloadHandler,
+      request: {
+        method: 'GET',
+        headers: {},
+        query: { courseId: 'course', index: '0' },
+      },
+    },
+    {
+      handler: progressCompleteHandler,
+      request: {
+        method: 'POST',
+        headers: {},
+        body: { lessonId: 'lesson' },
+      },
+    },
+  ];
+
+  for (const { handler, request } of endpoints) {
+    const { response, result } = createJsonResponse();
+    await handler(request, response);
+    assert.equal(result().statusCode, 401);
+    assert.equal(result().body.ok, false);
+  }
+});

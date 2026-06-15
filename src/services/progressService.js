@@ -176,6 +176,26 @@ const requestServerCertificate = async (user) => {
   };
 };
 
+const requestServerProgress = async (user, lessonId) => {
+  if (typeof user.getIdToken !== 'function') {
+    throw new Error('Necesitas iniciar sesión nuevamente.');
+  }
+
+  const response = await fetch('/api/progress-complete', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${await user.getIdToken()}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ lessonId }),
+  });
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.error || 'No se pudo guardar el progreso.');
+  }
+  return data;
+};
+
 export const fetchUserProfile = async (user) => {
   if (!user) return null;
 
@@ -238,20 +258,6 @@ export const fetchUserProfile = async (user) => {
         // El perfil sigue disponible aunque la emisión se reintente después.
       }
     }
-    await setDoc(
-      userRef,
-      {
-        name: profile.name,
-        email: profile.email,
-        completedLessons: profile.completedLessons,
-        favoriteCourses: profile.favoriteCourses,
-        currentLevel: profile.currentLevel,
-        totalProgress: profile.totalProgress,
-        updatedAt: serverTimestamp(),
-      },
-      { merge: true },
-    );
-
     return writeLocalProfile(profile);
   } catch {
     const profile = readLocalProfile(user, 'pending_payment');
@@ -264,6 +270,35 @@ export const fetchUserProfile = async (user) => {
 
 export const completeLesson = async (user, lessonId) => {
   const profile = await fetchUserProfile(user);
+
+  if (isFirebaseConfigured && db && !profile.syncPending) {
+    const serverProgress = await requestServerProgress(user, lessonId);
+    const nextProfile = {
+      ...profile,
+      completedLessons: serverProgress.completedLessons,
+      currentLevel: serverProgress.currentLevel,
+      totalProgress: serverProgress.totalProgress,
+      syncPending: false,
+    };
+
+    let serverCertificate = {};
+    if (
+      serverProgress.totalProgress === 100 &&
+      typeof user.getIdToken === 'function'
+    ) {
+      try {
+        serverCertificate = await requestServerCertificate(user);
+      } catch {
+        // El certificado se reintentará al abrir el perfil.
+      }
+    }
+
+    return writeLocalProfile({
+      ...nextProfile,
+      ...serverCertificate,
+    });
+  }
+
   const completedLessons = [...new Set([...profile.completedLessons, lessonId])];
   const stats = calculateProfileStats(completedLessons);
   const nextProfile = {
@@ -277,43 +312,7 @@ export const completeLesson = async (user, lessonId) => {
       ? applyCertificateMetadata(nextProfile, stats)
       : nextProfile;
 
-  if (!isFirebaseConfigured || !db || profile.syncPending) {
-    return writeLocalProfile(certifiedProfile);
-  }
-
-  try {
-    await setDoc(
-      doc(db, 'users', user.uid),
-      {
-        completedLessons: arrayUnion(lessonId),
-        currentLevel: stats.currentLevel,
-        totalProgress: stats.totalProgress,
-        syncPending: false,
-        updatedAt: serverTimestamp(),
-      },
-      { merge: true },
-    );
-  } catch {
-    return writeLocalProfile({
-      ...certifiedProfile,
-      syncPending: true,
-    });
-  }
-
-  let serverCertificate = {};
-  if (stats.totalProgress === 100 && typeof user.getIdToken === 'function') {
-    try {
-      serverCertificate = await requestServerCertificate(user);
-    } catch {
-      // El progreso queda guardado y el certificado se reintentará al abrirlo.
-    }
-  }
-
-  return writeLocalProfile({
-    ...certifiedProfile,
-    ...serverCertificate,
-    syncPending: false,
-  });
+  return writeLocalProfile(certifiedProfile);
 };
 
 export const getCertificateDisplayDate = (profile) =>
@@ -342,7 +341,6 @@ export const toggleFavoriteCourse = async (user, courseId) => {
       doc(db, 'users', user.uid),
       {
         favoriteCourses: isFavorite ? arrayRemove(courseId) : arrayUnion(courseId),
-        syncPending: false,
         updatedAt: serverTimestamp(),
       },
       { merge: true },
