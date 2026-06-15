@@ -1,4 +1,5 @@
 import { getDocument } from './firestore-rest.js';
+import { ensureAdminProfile } from './admin-access.js';
 import { verifyFirebaseIdToken } from './firebase-token.js';
 
 export const getBearerToken = (request) => {
@@ -21,6 +22,11 @@ export const requireActiveUser = async (request) => {
     const error = new Error('El correo debe estar verificado.');
     error.status = 403;
     throw error;
+  }
+
+  const adminProfile = await ensureAdminProfile(claims);
+  if (adminProfile) {
+    return adminProfile;
   }
 
   const path = `users/${claims.sub}`;

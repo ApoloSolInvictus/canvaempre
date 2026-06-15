@@ -3,6 +3,7 @@ import {
   setDocument,
   updateDocument,
 } from '../server/firestore-rest.js';
+import { ensureAdminProfile } from '../server/admin-access.js';
 import { verifyFirebaseIdToken } from '../server/firebase-token.js';
 import { hashValue, normalizeEmail } from '../server/hotmart.js';
 
@@ -32,6 +33,17 @@ export default async function handler(request, response) {
       return json(response, 403, {
         ok: false,
         error: 'El perfil necesita un correo verificado.',
+      });
+    }
+
+    const adminProfile = await ensureAdminProfile(claims);
+    if (adminProfile) {
+      return json(response, 200, {
+        ok: true,
+        accessStatus: 'active',
+        role: 'admin',
+        matched: true,
+        source: 'admin_allowlist',
       });
     }
 

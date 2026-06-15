@@ -33,6 +33,12 @@ const ProfileScreen = () => {
             <h2 className="truncate text-2xl font-black">
               {profile?.name ?? 'Emprendedor'}
             </h2>
+            {profile?.role === 'admin' && (
+              <p className="mt-1 inline-flex items-center gap-1 rounded-full bg-white/15 px-2.5 py-1 text-xs font-bold text-white">
+                <ShieldCheck className="h-3.5 w-3.5" />
+                Administrador W Studio
+              </p>
+            )}
             <p className="mt-1 text-sm font-semibold text-white/75">
               Nivel actual {stats.currentLevel}
             </p>
