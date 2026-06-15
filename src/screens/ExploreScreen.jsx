@@ -10,6 +10,7 @@ const ExploreScreen = () => {
   const { profile, toggleFavorite } = useProgress();
   const [query, setQuery] = useState('');
   const completedLessons = profile?.completedLessons ?? [];
+  const passedExams = profile?.passedExams ?? [];
   const favoriteCourses = profile?.favoriteCourses ?? [];
 
   const filteredCourses = useMemo(() => {
@@ -34,7 +35,12 @@ const ExploreScreen = () => {
             completedLessons={completedLessons}
             course={course}
             favorite={favoriteCourses.includes(course.id)}
-            locked={isCourseLocked(course, completedLessons)}
+            passedExams={passedExams}
+            locked={isCourseLocked(
+              course,
+              completedLessons,
+              passedExams,
+            )}
             onFavorite={() => toggleFavorite(course.id)}
           />
         ))}

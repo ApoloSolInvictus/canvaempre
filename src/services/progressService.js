@@ -8,6 +8,7 @@ import {
 } from 'firebase/firestore';
 import { courses, totalLessonCount } from '../data/courses';
 import { db, isFirebaseConfigured } from '../firebase/config';
+import { submitExamAnswers } from './protectedContent';
 
 const localKey = (uid) => `canva-emprende-user-${uid}`;
 
@@ -48,64 +49,103 @@ const applyCertificateMetadata = (profile, stats) => {
   };
 };
 
-export const calculateCourseProgress = (course, completedLessons = []) => {
+const totalExamCount = courses.length;
+const totalMilestoneCount = totalLessonCount + totalExamCount;
+
+export const calculateCourseProgress = (
+  course,
+  completedLessons = [],
+  passedExams = [],
+) => {
   const completedSet = new Set(completedLessons);
   const completedCount = course.lessons.filter((lesson) =>
     completedSet.has(lesson.id),
   ).length;
+  const examCount = passedExams.includes(course.id) ? 1 : 0;
 
-  return Math.round((completedCount / course.lessons.length) * 100);
+  return Math.round(
+    ((completedCount + examCount) / (course.lessons.length + 1)) * 100,
+  );
 };
 
-export const isCourseComplete = (course, completedLessons = []) =>
+export const areCourseLessonsComplete = (course, completedLessons = []) =>
   course.lessons.every((lesson) => completedLessons.includes(lesson.id));
 
-export const isCourseLocked = (course, completedLessons = []) => {
+export const isCourseComplete = (
+  course,
+  completedLessons = [],
+  passedExams = [],
+) =>
+  areCourseLessonsComplete(course, completedLessons) &&
+  passedExams.includes(course.id);
+
+export const isCourseLocked = (
+  course,
+  completedLessons = [],
+  passedExams = [],
+) => {
   if (course.level === 0) return false;
 
   const previousCourse = courses.find(
     (candidate) => candidate.level === course.level - 1,
   );
 
-  return previousCourse ? !isCourseComplete(previousCourse, completedLessons) : false;
+  return previousCourse ? !passedExams.includes(previousCourse.id) : false;
 };
 
-export const calculateProfileStats = (completedLessons = []) => {
+export const calculateProfileStats = (
+  completedLessons = [],
+  passedExams = [],
+) => {
   const uniqueCompleted = [...new Set(completedLessons)];
+  const uniquePassedExams = [...new Set(passedExams)].filter((courseId) =>
+    courses.some((course) => course.id === courseId),
+  );
   const totalProgress = Math.round(
-    (uniqueCompleted.length / totalLessonCount) * 100,
+    ((uniqueCompleted.length + uniquePassedExams.length) /
+      totalMilestoneCount) *
+      100,
   );
   const completedCourses = courses.filter((course) =>
-    isCourseComplete(course, uniqueCompleted),
+    uniquePassedExams.includes(course.id),
   );
   const firstOpenCourse =
-    courses.find((course) => !isCourseComplete(course, uniqueCompleted)) ??
+    courses.find((course) => !uniquePassedExams.includes(course.id)) ??
     courses[courses.length - 1];
 
   return {
     currentLevel: firstOpenCourse.level,
     totalProgress,
     completedCourses,
-    certificatesUnlocked: completedCourses.length,
+    certificatesUnlocked: totalProgress === 100 ? 1 : 0,
     completedClasses: uniqueCompleted.length,
+    passedExamCount: uniquePassedExams.length,
+    allRequirementsComplete:
+      uniqueCompleted.length === totalLessonCount &&
+      uniquePassedExams.length === totalExamCount,
   };
 };
 
-export const getNextLesson = (completedLessons = []) => {
+export const getNextLesson = (
+  completedLessons = [],
+  passedExams = [],
+) => {
   const completedSet = new Set(completedLessons);
-  const availableCourse = courses.find(
-    (course) =>
-      !isCourseLocked(course, completedLessons) &&
-      course.lessons.some((lesson) => !completedSet.has(lesson.id)),
+  const availableCourses = courses.filter(
+    (course) => !isCourseLocked(course, completedLessons, passedExams),
   );
 
-  if (!availableCourse) return null;
+  for (const course of availableCourses) {
+    const lesson = course.lessons.find(
+      (candidate) => !completedSet.has(candidate.id),
+    );
+    if (lesson) return { course, lesson, exam: false };
+    if (!passedExams.includes(course.id)) {
+      return { course, lesson: null, exam: true };
+    }
+  }
 
-  const lesson = availableCourse.lessons.find(
-    (candidate) => !completedSet.has(candidate.id),
-  );
-
-  return { course: availableCourse, lesson };
+  return null;
 };
 
 const baseProfile = (user, accessStatus = 'active') => {
@@ -122,6 +162,8 @@ const baseProfile = (user, accessStatus = 'active') => {
     currentLevel: 0,
     totalProgress: 0,
     completedLessons: [],
+    passedExams: [],
+    examResults: {},
     favoriteCourses: [],
     accessStatus,
     createdAt: new Date().toISOString(),
@@ -130,13 +172,16 @@ const baseProfile = (user, accessStatus = 'active') => {
 
 const normalizeProfile = (user, data = {}, defaultAccessStatus = 'active') => {
   const completedLessons = toArray(data.completedLessons);
+  const passedExams = toArray(data.passedExams);
   const favoriteCourses = toArray(data.favoriteCourses);
-  const stats = calculateProfileStats(completedLessons);
+  const stats = calculateProfileStats(completedLessons, passedExams);
 
   return {
     ...baseProfile(user, defaultAccessStatus),
     ...data,
     completedLessons,
+    passedExams,
+    examResults: data.examResults ?? {},
     favoriteCourses,
     currentLevel: stats.currentLevel,
     totalProgress: stats.totalProgress,
@@ -276,6 +321,7 @@ export const completeLesson = async (user, lessonId) => {
     const nextProfile = {
       ...profile,
       completedLessons: serverProgress.completedLessons,
+      passedExams: serverProgress.passedExams ?? profile.passedExams,
       currentLevel: serverProgress.currentLevel,
       totalProgress: serverProgress.totalProgress,
       syncPending: false,
@@ -300,7 +346,10 @@ export const completeLesson = async (user, lessonId) => {
   }
 
   const completedLessons = [...new Set([...profile.completedLessons, lessonId])];
-  const stats = calculateProfileStats(completedLessons);
+  const stats = calculateProfileStats(
+    completedLessons,
+    profile.passedExams,
+  );
   const nextProfile = {
     ...profile,
     completedLessons,
@@ -313,6 +362,57 @@ export const completeLesson = async (user, lessonId) => {
       : nextProfile;
 
   return writeLocalProfile(certifiedProfile);
+};
+
+export const submitExamAttempt = async (user, courseId, answers) => {
+  const profile = await fetchUserProfile(user);
+  const result = await submitExamAnswers(user, courseId, answers);
+  const previousExamResult = profile.examResults?.[courseId] ?? {};
+  const examResult = user?.isDemo
+    ? {
+        ...result.examResult,
+        attempts: (previousExamResult.attempts ?? 0) + 1,
+        bestScore: Math.max(
+          previousExamResult.bestScore ?? 0,
+          result.score,
+        ),
+        passed: Boolean(previousExamResult.passed || result.passed),
+        passedAt:
+          previousExamResult.passedAt ??
+          (result.passed ? new Date().toISOString() : null),
+      }
+    : result.examResult;
+  const passedExams = result.passed
+    ? [...new Set([...profile.passedExams, courseId])]
+    : profile.passedExams;
+  const examResults = {
+    ...(profile.examResults ?? {}),
+    [courseId]: examResult,
+  };
+  const stats = calculateProfileStats(
+    profile.completedLessons,
+    result.passedExams ?? passedExams,
+  );
+  const nextProfile = {
+    ...profile,
+    passedExams: result.passedExams ?? passedExams,
+    examResults,
+    currentLevel: result.currentLevel ?? stats.currentLevel,
+    totalProgress: result.totalProgress ?? stats.totalProgress,
+    syncPending: false,
+  };
+  const finalProfile =
+    user?.isDemo && stats.totalProgress === 100
+      ? applyCertificateMetadata(nextProfile, stats)
+      : nextProfile;
+
+  return {
+    result: {
+      ...result,
+      examResult,
+    },
+    profile: writeLocalProfile(finalProfile),
+  };
 };
 
 export const getCertificateDisplayDate = (profile) =>

@@ -9,11 +9,12 @@ import { isCourseLocked } from '../services/progressService';
 const LearningPathScreen = () => {
   const { profile, stats } = useProgress();
   const completedLessons = profile?.completedLessons ?? [];
+  const passedExams = profile?.passedExams ?? [];
 
   return (
     <div className="space-y-5">
       <Header
-        subtitle="Cinco niveles, cuarenta clases"
+        subtitle="Cinco niveles, cuarenta clases y cinco exámenes"
         title="Ruta de aprendizaje"
       />
       <section className="mx-5 rounded-3xl bg-gradient-to-br from-indigo-600 to-violet-600 p-5 text-white shadow-soft">
@@ -22,7 +23,7 @@ const LearningPathScreen = () => {
           Avanza en orden y construye tu marca.
         </h2>
         <p className="mt-2 text-sm font-semibold leading-relaxed text-white/75">
-          Cada nivel se desbloquea al completar el anterior.
+          Cada nivel se desbloquea al aprobar el examen anterior con 70%.
         </p>
         <div className="mt-5 rounded-2xl bg-white/15 p-4">
           <ProgressBar label="Progreso total" value={stats.totalProgress} />
@@ -35,7 +36,12 @@ const LearningPathScreen = () => {
             key={course.id}
             completedLessons={completedLessons}
             course={course}
-            locked={isCourseLocked(course, completedLessons)}
+            passedExams={passedExams}
+            locked={isCourseLocked(
+              course,
+              completedLessons,
+              passedExams,
+            )}
           />
         ))}
       </section>
@@ -43,7 +49,8 @@ const LearningPathScreen = () => {
       <section className="mx-5 flex gap-3 rounded-3xl bg-emerald-50 p-5 text-emerald-800">
         <CheckCircle2 className="mt-0.5 h-6 w-6 shrink-0" />
         <p className="text-sm font-semibold leading-relaxed">
-          Al llegar al 100 % podrás emitir tu certificado digital de W Studio.
+          Al completar las 40 clases y aprobar los 5 exámenes podrás emitir tu
+          certificado digital de W Studio.
         </p>
       </section>
     </div>
@@ -51,4 +58,3 @@ const LearningPathScreen = () => {
 };
 
 export default LearningPathScreen;
-

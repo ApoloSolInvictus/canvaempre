@@ -44,6 +44,7 @@ const LessonScreen = () => {
   const lesson = getLessonById(lessonId);
   const course = getCourseForLesson(lessonId);
   const completedLessons = profile?.completedLessons ?? [];
+  const passedExams = profile?.passedExams ?? [];
 
   useEffect(() => {
     setOptimisticComplete(false);
@@ -99,7 +100,7 @@ const LessonScreen = () => {
   const { previousLesson, nextLesson, lessonNumber } = getLessonNavigation(lesson.id);
   const completed = optimisticComplete || completedLessons.includes(lesson.id);
   const locked =
-    isCourseLocked(course, completedLessons) ||
+    isCourseLocked(course, completedLessons, passedExams) ||
     Boolean(
       !completed &&
         previousLesson &&
@@ -108,7 +109,11 @@ const LessonScreen = () => {
   const progressLessons = completed
     ? [...new Set([...completedLessons, lesson.id])]
     : completedLessons;
-  const progress = calculateCourseProgress(course, progressLessons);
+  const progress = calculateCourseProgress(
+    course,
+    progressLessons,
+    passedExams,
+  );
 
   const handleComplete = async () => {
     if (completed || isCompleting) return;

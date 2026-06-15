@@ -10,6 +10,7 @@ import {
   calculateProfileStats,
   completeLesson,
   fetchUserProfile,
+  submitExamAttempt,
   toggleFavoriteCourse,
 } from '../services/progressService';
 
@@ -81,9 +82,19 @@ export const ProgressProvider = ({ user, children }) => {
     return nextProfile;
   }, [user]);
 
+  const submitExam = useCallback(async (courseId, answers) => {
+    const submission = await submitExamAttempt(user, courseId, answers);
+    setProfile(submission.profile);
+    return submission.result;
+  }, [user]);
+
   const stats = useMemo(
-    () => calculateProfileStats(profile?.completedLessons ?? []),
-    [profile],
+    () =>
+      calculateProfileStats(
+        profile?.completedLessons ?? [],
+        profile?.passedExams ?? [],
+      ),
+    [profile?.completedLessons, profile?.passedExams],
   );
 
   const value = useMemo(
@@ -94,6 +105,7 @@ export const ProgressProvider = ({ user, children }) => {
       stats,
       refreshProfile,
       markLessonComplete,
+      submitExam,
       toggleFavorite,
     }),
     [
@@ -103,6 +115,7 @@ export const ProgressProvider = ({ user, children }) => {
       stats,
       refreshProfile,
       markLessonComplete,
+      submitExam,
       toggleFavorite,
     ],
   );

@@ -2,6 +2,7 @@ import {
   BookOpen,
   CheckCircle2,
   ChevronLeft,
+  ClipboardCheck,
   Clock3,
   Download,
   Heart,
@@ -19,6 +20,7 @@ import { useProgress } from '../context/ProgressContext';
 import { useAuth } from '../context/AuthContext';
 import { getCourseById } from '../data/courses';
 import {
+  areCourseLessonsComplete,
   isCourseLocked,
 } from '../services/progressService';
 import { trackEvent } from '../services/analytics';
@@ -41,6 +43,8 @@ const CourseDetailScreen = () => {
   const { profile, toggleFavorite } = useProgress();
   const course = getCourseById(courseId);
   const completedLessons = profile?.completedLessons ?? [];
+  const passedExams = profile?.passedExams ?? [];
+  const examResults = profile?.examResults ?? {};
   const favoriteCourses = profile?.favoriteCourses ?? [];
 
   useEffect(() => {
@@ -79,10 +83,16 @@ const CourseDetailScreen = () => {
 
   if (!course) return <Navigate replace to="/app" />;
 
-  const firstLesson =
-    course.lessons.find((lesson) => !completedLessons.includes(lesson.id)) ??
-    course.lessons[0];
-  const locked = isCourseLocked(course, completedLessons);
+  const firstLesson = course.lessons.find(
+    (lesson) => !completedLessons.includes(lesson.id),
+  );
+  const locked = isCourseLocked(course, completedLessons, passedExams);
+  const lessonsComplete = areCourseLessonsComplete(
+    course,
+    completedLessons,
+  );
+  const examPassed = passedExams.includes(course.id);
+  const examResult = examResults[course.id];
   const isFavorite = favoriteCourses.includes(course.id);
   const isLessonLocked = (lesson, index) =>
     locked ||
@@ -168,7 +178,13 @@ const CourseDetailScreen = () => {
       <section className="px-8">
         <PrimaryButton
           disabled={locked}
-          onClick={() => navigate(`/app/leccion/${firstLesson.id}`)}
+          onClick={() =>
+            navigate(
+              lessonsComplete
+                ? `/app/examen/${course.id}`
+                : `/app/leccion/${firstLesson.id}`,
+            )
+          }
         >
           {locked ? (
             <>
@@ -178,9 +194,19 @@ const CourseDetailScreen = () => {
           ) : (
             <>
               <span className="grid h-8 w-8 place-items-center rounded-full bg-white text-violet">
-                <Play className="h-4 w-4 fill-violet" />
+                {lessonsComplete ? (
+                  <ClipboardCheck className="h-4 w-4" />
+                ) : (
+                  <Play className="h-4 w-4 fill-violet" />
+                )}
               </span>
-              Comenzar clase
+              {lessonsComplete
+                ? examPassed
+                  ? 'Ver examen aprobado'
+                  : examResult
+                    ? 'Volver a intentar examen'
+                    : 'Comenzar examen'
+                : 'Comenzar clase'}
             </>
           )}
         </PrimaryButton>
@@ -222,6 +248,35 @@ const CourseDetailScreen = () => {
               locked={isLessonLocked(lesson, index)}
             />
           ))}
+          <button
+            className="flex w-full items-center gap-3 border-b border-gray-200 py-4 text-left transition active:scale-[0.995] disabled:opacity-60 disabled:active:scale-100"
+            disabled={locked || !lessonsComplete}
+            type="button"
+            onClick={() => navigate(`/app/examen/${course.id}`)}
+          >
+            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-violet/10 text-violet">
+              <ClipboardCheck className="h-5 w-5" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-[15px] font-black leading-tight text-ink">
+                Examen final del nivel
+              </span>
+              <span className="mt-1 block text-sm font-medium text-muted">
+                10 preguntas · Aprobación mínima 70%
+              </span>
+            </span>
+            {examPassed ? (
+              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-emerald-500 text-white">
+                <CheckCircle2 className="h-5 w-5" />
+              </span>
+            ) : locked || !lessonsComplete ? (
+              <Lock className="h-5 w-5 shrink-0 text-muted" />
+            ) : (
+              <span className="text-sm font-black text-violet">
+                {examResult ? 'Reintentar' : 'Comenzar'}
+              </span>
+            )}
+          </button>
         </section>
       ) : (
         <section className="space-y-3 px-8">

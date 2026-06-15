@@ -33,6 +33,45 @@ const buildDemoLesson = (lessonId) => ({
   assignment: 'Guarda tu avance para retomarlo en la siguiente clase.',
 });
 
+const demoExamQuestions = [
+  {
+    id: 'demo-q1',
+    prompt: '¿Qué debe definirse antes de comenzar un diseño?',
+    options: [
+      'El efecto más llamativo',
+      'El objetivo y el mensaje',
+      'Cinco tipografías',
+      'Todos los colores',
+      'La descarga final',
+    ],
+    correctIndex: 1,
+  },
+  ...Array.from({ length: 9 }, (_, index) => ({
+    id: `demo-q${index + 2}`,
+    prompt: `Pregunta de demostración ${index + 2}: selecciona la práctica que aporta mayor claridad.`,
+    options: [
+      'Agregar elementos sin función',
+      'Cambiar la identidad en cada pieza',
+      'Usar jerarquía, contraste y alineación',
+      'Ocultar la llamada a la acción',
+      'Reducir todo el texto al mínimo tamaño',
+    ],
+    correctIndex: 2,
+  })),
+];
+
+const publicDemoExam = (courseId) => ({
+  courseId,
+  title: 'Examen de demostración',
+  passingScore: 70,
+  questionCount: demoExamQuestions.length,
+  questions: demoExamQuestions.map(({ id, prompt, options }) => ({
+    id,
+    prompt,
+    options,
+  })),
+});
+
 export const fetchLessonContent = async (user, lessonId) => {
   if (user?.isDemo) return buildDemoLesson(lessonId);
 
@@ -49,6 +88,78 @@ export const fetchLessonContent = async (user, lessonId) => {
   }
   const data = await response.json();
   return data.lesson;
+};
+
+export const fetchCourseExam = async (user, courseId) => {
+  if (user?.isDemo) {
+    return {
+      exam: publicDemoExam(courseId),
+      previousResult: null,
+    };
+  }
+
+  const response = await fetch(
+    `/api/exam-content?courseId=${encodeURIComponent(courseId)}`,
+    {
+      headers: { Authorization: await getAuthorization(user) },
+    },
+  );
+  if (!response.ok) {
+    throw new Error(
+      await readError(response, 'No se pudo cargar el examen.'),
+    );
+  }
+  return response.json();
+};
+
+export const submitExamAnswers = async (user, courseId, answers) => {
+  if (user?.isDemo) {
+    const review = demoExamQuestions.map((item) => ({
+      id: item.id,
+      selectedIndex: answers[item.id],
+      correctIndex: item.correctIndex,
+      correct: answers[item.id] === item.correctIndex,
+      explanation:
+        'La respuesta correcta aplica claridad, intención y coherencia visual.',
+    }));
+    const correctAnswers = review.filter((item) => item.correct).length;
+    const score = correctAnswers * 10;
+    const passed = score >= 70;
+
+    return {
+      ok: true,
+      courseId,
+      score,
+      correctAnswers,
+      incorrectAnswers: 10 - correctAnswers,
+      passingScore: 70,
+      passed,
+      review,
+      examResult: {
+        attempts: 1,
+        bestScore: score,
+        lastScore: score,
+        passed,
+        passedAt: passed ? new Date().toISOString() : null,
+        lastAttemptAt: new Date().toISOString(),
+      },
+    };
+  }
+
+  const response = await fetch('/api/exam-submit', {
+    method: 'POST',
+    headers: {
+      Authorization: await getAuthorization(user),
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ courseId, answers }),
+  });
+  if (!response.ok) {
+    throw new Error(
+      await readError(response, 'No se pudo calificar el examen.'),
+    );
+  }
+  return response.json();
 };
 
 export const fetchCourseResources = async (user, courseId) => {

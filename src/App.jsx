@@ -13,6 +13,7 @@ const CourseDetailScreen = lazy(
   () => import('./screens/CourseDetailScreen'),
 );
 const ExploreScreen = lazy(() => import('./screens/ExploreScreen'));
+const ExamScreen = lazy(() => import('./screens/ExamScreen'));
 const FavoritesScreen = lazy(() => import('./screens/FavoritesScreen'));
 const HomeScreen = lazy(() => import('./screens/HomeScreen'));
 const LearningPathScreen = lazy(
@@ -85,6 +86,7 @@ const App = () => (
           <Route path="certificado" element={<CertificateScreen />} />
           <Route path="curso/:courseId" element={<CourseDetailScreen />} />
           <Route path="leccion/:lessonId" element={<LessonScreen />} />
+          <Route path="examen/:courseId" element={<ExamScreen />} />
         </Route>
       </Route>
 

@@ -10,11 +10,12 @@ import {
 const MyClassesScreen = () => {
   const { profile, toggleFavorite } = useProgress();
   const completedLessons = profile?.completedLessons ?? [];
+  const passedExams = profile?.passedExams ?? [];
   const favoriteCourses = profile?.favoriteCourses ?? [];
   const startedCourses = courses.filter(
     (course) =>
-      calculateCourseProgress(course, completedLessons) > 0 ||
-      !isCourseLocked(course, completedLessons),
+      calculateCourseProgress(course, completedLessons, passedExams) > 0 ||
+      !isCourseLocked(course, completedLessons, passedExams),
   );
 
   return (
@@ -27,7 +28,12 @@ const MyClassesScreen = () => {
             completedLessons={completedLessons}
             course={course}
             favorite={favoriteCourses.includes(course.id)}
-            locked={isCourseLocked(course, completedLessons)}
+            passedExams={passedExams}
+            locked={isCourseLocked(
+              course,
+              completedLessons,
+              passedExams,
+            )}
             onFavorite={() => toggleFavorite(course.id)}
           />
         ))}

@@ -67,6 +67,8 @@ export const ensureAdminProfile = async (claims) => {
     currentLevel: 0,
     totalProgress: 0,
     completedLessons: [],
+    passedExams: [],
+    examResults: {},
     favoriteCourses: [],
     createdAt: new Date(),
     paymentProvider: 'admin',

@@ -8,6 +8,7 @@ import { isCourseLocked } from '../services/progressService';
 const FavoritesScreen = () => {
   const { profile, toggleFavorite } = useProgress();
   const completedLessons = profile?.completedLessons ?? [];
+  const passedExams = profile?.passedExams ?? [];
   const favoriteCourses = profile?.favoriteCourses ?? [];
   const visibleCourses = courses.filter((course) =>
     favoriteCourses.includes(course.id),
@@ -24,7 +25,12 @@ const FavoritesScreen = () => {
               completedLessons={completedLessons}
               course={course}
               favorite
-              locked={isCourseLocked(course, completedLessons)}
+              passedExams={passedExams}
+              locked={isCourseLocked(
+                course,
+                completedLessons,
+                passedExams,
+              )}
               onFavorite={() => toggleFavorite(course.id)}
             />
           ))

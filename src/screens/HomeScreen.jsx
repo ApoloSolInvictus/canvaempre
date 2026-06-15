@@ -25,8 +25,14 @@ const HomeScreen = () => {
   const [query, setQuery] = useState('');
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const completedLessons = profile?.completedLessons ?? [];
+  const passedExams = profile?.passedExams ?? [];
   const favoriteCourses = profile?.favoriteCourses ?? [];
-  const next = getNextLesson(completedLessons);
+  const next = getNextLesson(completedLessons, passedExams);
+  const nextPath = next
+    ? next.exam
+      ? `/app/examen/${next.course.id}`
+      : `/app/leccion/${next.lesson.id}`
+    : '/app/perfil';
 
   const filteredCourses = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -102,13 +108,17 @@ const HomeScreen = () => {
           <button
             className="min-w-0 flex-1 text-left"
             type="button"
-            onClick={() => next && navigate(`/app/leccion/${next.lesson.id}`)}
+            onClick={() => navigate(nextPath)}
           >
             <p className="text-xs font-semibold uppercase text-muted">
               Nivel {next ? next.course.level : stats.currentLevel}
             </p>
             <h3 className="mt-1 line-clamp-2 text-lg font-black leading-snug text-ink">
-              {next ? next.course.title : 'Ruta completada'}
+              {next
+                ? next.exam
+                  ? `Examen: ${next.course.title}`
+                  : next.course.title
+                : 'Ruta completada'}
             </h3>
             <div className="mt-4">
               <ProgressBar compact value={stats.totalProgress} />
@@ -118,7 +128,7 @@ const HomeScreen = () => {
             aria-label="Continuar clase"
             className="flex h-12 w-20 shrink-0 items-center justify-end gap-2 bg-white text-muted"
             type="button"
-            onClick={() => next && navigate(`/app/leccion/${next.lesson.id}`)}
+            onClick={() => navigate(nextPath)}
           >
             <span className="text-xl font-black text-violet">
               {stats.totalProgress}%
@@ -145,7 +155,12 @@ const HomeScreen = () => {
               key={course.id}
               completedLessons={completedLessons}
               course={course}
-              locked={isCourseLocked(course, completedLessons)}
+              passedExams={passedExams}
+              locked={isCourseLocked(
+                course,
+                completedLessons,
+                passedExams,
+              )}
             />
           ))}
         </div>
@@ -159,7 +174,12 @@ const HomeScreen = () => {
             completedLessons={completedLessons}
             course={course}
             favorite={favoriteCourses.includes(course.id)}
-            locked={isCourseLocked(course, completedLessons)}
+            passedExams={passedExams}
+            locked={isCourseLocked(
+              course,
+              completedLessons,
+              passedExams,
+            )}
             onFavorite={() => toggleFavorite(course.id)}
           />
         ))}
@@ -173,13 +193,15 @@ const HomeScreen = () => {
         {[
           {
             icon: BookOpenCheck,
-            title: next ? 'Tu siguiente clase está lista' : 'Ruta completada',
+            title: next
+              ? next.exam
+                ? 'Tu examen de nivel está listo'
+                : 'Tu siguiente clase está lista'
+              : 'Ruta completada',
             text: next
-              ? `${next.lesson.title} · Nivel ${next.course.level}`
-              : 'Has completado las cuarenta clases.',
-            action: next
-              ? () => navigate(`/app/leccion/${next.lesson.id}`)
-              : () => navigate('/app/perfil'),
+              ? `${next.exam ? 'Evaluación final' : next.lesson.title} · Nivel ${next.course.level}`
+              : 'Has completado las cuarenta clases y los cinco exámenes.',
+            action: () => navigate(nextPath),
           },
           {
             icon: Sparkles,

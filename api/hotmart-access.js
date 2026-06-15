@@ -82,6 +82,8 @@ export default async function handler(request, response) {
         currentLevel: 0,
         totalProgress: 0,
         completedLessons: [],
+        passedExams: [],
+        examResults: {},
         favoriteCourses: [],
         createdAt: new Date(),
         ...accessData,

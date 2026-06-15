@@ -8,7 +8,7 @@ import {
   buildCertificateNumber,
   certificateDocumentId,
 } from '../server/certificate.js';
-import { allLessons } from '../server/course-content.js';
+import { calculateServerStats } from '../server/progress-stats.js';
 
 const json = (response, status, body) => {
   response.status(status).json(body);
@@ -50,19 +50,16 @@ export default async function handler(request, response) {
       });
     }
 
-    const knownLessonIds = new Set(allLessons.map((lesson) => lesson.id));
-    const completedLessons = new Set(
-      (user.data.completedLessons ?? []).filter((lessonId) =>
-        knownLessonIds.has(lessonId),
-      ),
+    const stats = calculateServerStats(
+      user.data.completedLessons ?? [],
+      user.data.passedExams ?? [],
     );
-
-    if (completedLessons.size !== knownLessonIds.size) {
+    if (!stats.allRequirementsComplete) {
       return json(response, 409, {
         ok: false,
-        error: 'Aún faltan clases por completar.',
-        completed: completedLessons.size,
-        total: knownLessonIds.size,
+        error: 'Aún faltan clases o exámenes por aprobar.',
+        completedLessons: stats.completedLessons.length,
+        passedExams: stats.passedExams.length,
       });
     }
 

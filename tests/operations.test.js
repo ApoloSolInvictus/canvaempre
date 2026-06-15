@@ -12,6 +12,8 @@ import lessonContentHandler from '../api/lesson-content.js';
 import courseResourcesHandler from '../api/course-resources.js';
 import progressCompleteHandler from '../api/progress-complete.js';
 import resourceDownloadHandler from '../api/resource-download.js';
+import examContentHandler from '../api/exam-content.js';
+import examSubmitHandler from '../api/exam-submit.js';
 
 const createJsonResponse = () => {
   let statusCode = 0;
@@ -100,6 +102,22 @@ test('protege lecciones, recursos, descargas y progreso sin sesión', async () =
         method: 'POST',
         headers: {},
         body: { lessonId: 'lesson' },
+      },
+    },
+    {
+      handler: examContentHandler,
+      request: {
+        method: 'GET',
+        headers: {},
+        query: { courseId: 'course' },
+      },
+    },
+    {
+      handler: examSubmitHandler,
+      request: {
+        method: 'POST',
+        headers: {},
+        body: { courseId: 'course', answers: {} },
       },
     },
   ];

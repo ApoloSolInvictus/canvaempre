@@ -40,10 +40,19 @@ const styles = [
   },
 ];
 
-const LevelCard = ({ course, completedLessons = [], locked = false }) => {
+const LevelCard = ({
+  course,
+  completedLessons = [],
+  passedExams = [],
+  locked = false,
+}) => {
   const navigate = useNavigate();
-  const progress = calculateCourseProgress(course, completedLessons);
-  const complete = progress === 100;
+  const progress = calculateCourseProgress(
+    course,
+    completedLessons,
+    passedExams,
+  );
+  const complete = passedExams.includes(course.id);
   const style = styles[course.level] ?? styles[1];
   const Icon = style.iconComponent;
 
@@ -66,7 +75,7 @@ const LevelCard = ({ course, completedLessons = [], locked = false }) => {
           {course.title}
         </span>
         <span className="mt-2 block text-sm font-medium text-muted">
-          {course.duration} · {course.lessonsCount} lecciones
+          {course.duration} · {course.lessonsCount} lecciones · 1 examen
         </span>
       </span>
       {locked ? (

@@ -53,9 +53,9 @@ const ProfileScreen = () => {
         <div className="rounded-3xl border border-gray-100 bg-white p-4 shadow-sm">
           <Award className="h-6 w-6 text-violet" />
           <p className="mt-4 text-2xl font-black text-ink">
-            {stats.certificatesUnlocked}
+            {stats.passedExamCount}/5
           </p>
-          <p className="text-xs font-bold text-muted">Certificados</p>
+          <p className="text-xs font-bold text-muted">Exámenes aprobados</p>
         </div>
         <div className="rounded-3xl border border-gray-100 bg-white p-4 shadow-sm">
           <BookCheck className="h-6 w-6 text-emerald-500" />
@@ -81,7 +81,7 @@ const ProfileScreen = () => {
                   ? 'Disponible para guardar como PDF'
                   : stats.totalProgress === 100
                     ? 'Completado: certificado en emisión'
-                    : `Pendiente: ${stats.totalProgress}% completado`}
+                    : `Pendiente: ${stats.totalProgress}% de la ruta`}
               </p>
             </div>
           </div>

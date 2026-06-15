@@ -61,7 +61,7 @@ const CertificateScreen = () => {
           <p className="mt-3 text-sm font-semibold leading-relaxed text-muted">
             {stats.totalProgress === 100
               ? 'Completaste el programa. Estamos verificando y emitiendo tu certificado en el servidor.'
-              : 'Completa todas las clases de Canva para Emprendedores para emitir tu certificado digital de W Studio.'}
+              : 'Completa las 40 clases y aprueba los 5 exámenes para emitir tu certificado digital de W Studio.'}
           </p>
           <div className="mt-6">
             <ProgressBar label="Progreso del curso" value={stats.totalProgress} />

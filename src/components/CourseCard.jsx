@@ -21,12 +21,17 @@ const MiniPoster = ({ gradient }) => (
 const CourseCard = ({
   course,
   completedLessons = [],
+  passedExams = [],
   favorite = false,
   locked = false,
   onFavorite,
 }) => {
   const navigate = useNavigate();
-  const progress = calculateCourseProgress(course, completedLessons);
+  const progress = calculateCourseProgress(
+    course,
+    completedLessons,
+    passedExams,
+  );
 
   return (
     <article className={cn('rounded-[1.35rem] border border-gray-200 bg-white p-3 transition', locked && 'opacity-65')}>

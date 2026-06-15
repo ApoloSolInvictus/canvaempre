@@ -2,32 +2,16 @@ import { updateDocument } from '../server/firestore-rest.js';
 import { requireActiveUser } from '../server/authorized-user.js';
 import {
   allLessons,
-  courses,
   getCourseForLesson,
   getLessonById,
 } from '../server/course-content.js';
+import {
+  calculateServerStats,
+  courseUnlocked,
+} from '../server/progress-stats.js';
 
 const json = (response, status, body) => {
   response.status(status).json(body);
-};
-
-const calculateStats = (completedLessons) => {
-  const completedSet = new Set(completedLessons);
-  const completedCourses = courses.filter((course) =>
-    course.lessons.every((lesson) => completedSet.has(lesson.id)),
-  );
-  const firstOpenCourse =
-    courses.find((course) =>
-      course.lessons.some((lesson) => !completedSet.has(lesson.id)),
-    ) ?? courses[courses.length - 1];
-
-  return {
-    currentLevel: firstOpenCourse.level,
-    totalProgress: Math.round(
-      (completedSet.size / allLessons.length) * 100,
-    ),
-    completedCourses: completedCourses.length,
-  };
 };
 
 export default async function handler(request, response) {
@@ -57,29 +41,27 @@ export default async function handler(request, response) {
     const lessonIndex = course.lessons.findIndex(
       (item) => item.id === lessonId,
     );
-    const previousCourse = courses.find(
-      (item) => item.level === course.level - 1,
-    );
-    const previousCourseComplete =
-      !previousCourse ||
-      previousCourse.lessons.every((item) => completedSet.has(item.id));
+    const passedExams = user.data.passedExams ?? [];
+    const currentCourseUnlocked = courseUnlocked(course, passedExams);
     const previousLessonComplete =
       lessonIndex === 0 ||
       completedSet.has(course.lessons[lessonIndex - 1].id);
 
-    if (!previousCourseComplete || !previousLessonComplete) {
+    if (!currentCourseUnlocked || !previousLessonComplete) {
       return json(response, 409, {
         ok: false,
-        error: 'Completa primero las clases anteriores.',
+        error: currentCourseUnlocked
+          ? 'Completa primero las clases anteriores.'
+          : 'Aprueba primero el examen del nivel anterior.',
       });
     }
 
     completedSet.add(lessonId);
     const completedLessons = [...completedSet];
-    const stats = calculateStats(completedLessons);
+    const stats = calculateServerStats(completedLessons, passedExams);
 
     await updateDocument(path, {
-      completedLessons,
+      completedLessons: stats.completedLessons,
       currentLevel: stats.currentLevel,
       totalProgress: stats.totalProgress,
       updatedAt: new Date(),
@@ -87,7 +69,8 @@ export default async function handler(request, response) {
 
     return json(response, 200, {
       ok: true,
-      completedLessons,
+      completedLessons: stats.completedLessons,
+      passedExams: stats.passedExams,
       currentLevel: stats.currentLevel,
       totalProgress: stats.totalProgress,
     });
