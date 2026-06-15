@@ -4,12 +4,13 @@ import {
   Clock3,
   Headphones,
   Lock,
+  Maximize2,
   MoreVertical,
   Share2,
+  X,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
-import MockupVisual from '../components/MockupVisual';
 import ActionSheet from '../components/ActionSheet';
 import PrimaryButton from '../components/PrimaryButton';
 import ProgressBar from '../components/ProgressBar';
@@ -36,6 +37,7 @@ const LessonScreen = () => {
   const [optimisticComplete, setOptimisticComplete] = useState(false);
   const [error, setError] = useState('');
   const [optionsOpen, setOptionsOpen] = useState(false);
+  const [visualOpen, setVisualOpen] = useState(false);
   const [lessonContent, setLessonContent] = useState(null);
   const [contentLoading, setContentLoading] = useState(true);
   const [contentError, setContentError] = useState('');
@@ -46,7 +48,25 @@ const LessonScreen = () => {
   useEffect(() => {
     setOptimisticComplete(false);
     setError('');
+    setVisualOpen(false);
   }, [lessonId]);
+
+  useEffect(() => {
+    if (!visualOpen) return undefined;
+
+    const previousOverflow = document.body.style.overflow;
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') setVisualOpen(false);
+    };
+
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [visualOpen]);
 
   useEffect(() => {
     let active = true;
@@ -159,7 +179,31 @@ const LessonScreen = () => {
           <Clock3 className="h-7 w-7" strokeWidth={2.1} />
           {lesson.duration}
         </p>
-        <MockupVisual gradient={course.gradient} variant="editor" />
+        <figure>
+          <button
+            aria-label={`Ampliar ejemplo visual: ${lesson.title}`}
+            className="group relative block aspect-[3/2] w-full overflow-hidden rounded-[1.35rem] bg-gray-100 shadow-[0_18px_52px_rgba(9,11,31,0.12)]"
+            type="button"
+            onClick={() => setVisualOpen(true)}
+          >
+            <img
+              alt={`Ejemplo educativo de ${lesson.title} creado para W Studio`}
+              className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.01]"
+              decoding="async"
+              fetchpriority="high"
+              height="1024"
+              src={lesson.visualUrl}
+              width="1536"
+            />
+            <span className="absolute bottom-3 right-3 inline-flex items-center gap-2 rounded-full bg-ink/85 px-3 py-2 text-xs font-black text-white shadow-lg backdrop-blur">
+              <Maximize2 className="h-4 w-4" />
+              Ampliar
+            </span>
+          </button>
+          <figcaption className="mt-3 text-sm font-semibold leading-relaxed text-muted">
+            Ejemplo visual W Studio aplicado al tema de esta clase.
+          </figcaption>
+        </figure>
       </section>
 
       {locked ? (
@@ -341,6 +385,38 @@ const LessonScreen = () => {
           Contactar soporte
         </a>
       </ActionSheet>
+      {visualOpen && (
+        <div
+          aria-label={`Ejemplo ampliado: ${lesson.title}`}
+          aria-modal="true"
+          className="fixed inset-0 z-50 grid place-items-center bg-ink/95 p-3 sm:p-6"
+          role="dialog"
+        >
+          <button
+            aria-label="Cerrar imagen ampliada"
+            className="absolute inset-0 cursor-zoom-out"
+            type="button"
+            onClick={() => setVisualOpen(false)}
+          />
+          <div className="relative z-10 w-full max-w-6xl">
+            <button
+              aria-label="Cerrar imagen ampliada"
+              className="absolute right-3 top-3 z-20 grid h-11 w-11 place-items-center rounded-full bg-white text-ink shadow-lg"
+              type="button"
+              onClick={() => setVisualOpen(false)}
+            >
+              <X className="h-6 w-6" />
+            </button>
+            <img
+              alt={`Ejemplo educativo ampliado de ${lesson.title}`}
+              className="max-h-[calc(100vh-3rem)] w-full rounded-[1.35rem] bg-white object-contain shadow-2xl"
+              height="1024"
+              src={lesson.visualUrl}
+              width="1536"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

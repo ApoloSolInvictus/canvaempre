@@ -9,3 +9,5 @@ yarn-error.log*
 pnpm-debug.log*
 vite-server.*.log
 .DS_Store
+public/lesson-visuals/raw/
+lesson-visuals-contact-sheet.jpg

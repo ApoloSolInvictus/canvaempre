@@ -149,6 +149,9 @@ export const courses = courseBlueprints.map((course) => {
     duration: lessonDurations[lessonIndex],
     moduleTitle: course.title,
     courseId: course.id,
+    visualUrl: `/lesson-visuals/final/nivel-${course.level}-${String(
+      lessonIndex + 1,
+    ).padStart(2, '0')}.webp`,
   }));
 
   return {
