@@ -49,17 +49,14 @@ service cloud.firestore {
 
     match /courses/{courseId} {
       allow read, write: if false;
-      allow write: if false;
     }
 
     match /lessons/{lessonId} {
       allow read, write: if false;
-      allow write: if false;
     }
 
     match /certificates/{certificateId} {
       allow read, write: if false;
-      allow write: if false;
     }
 
     match /hotmartEntitlements/{documentId} {
