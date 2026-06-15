@@ -5,6 +5,30 @@ import { useAuth } from '../context/AuthContext';
 import { SITE_CONFIG } from '../config/site';
 import PrimaryButton from './PrimaryButton';
 
+const authErrorMessages = {
+  'auth/account-exists-with-different-credential':
+    'Ese correo ya tiene una cuenta con otro método de acceso.',
+  'auth/email-already-in-use':
+    'Ese correo ya tiene una cuenta. Prueba iniciar sesión.',
+  'auth/internal-error':
+    'Google no pudo abrirse correctamente. Recarga la página e inténtalo de nuevo.',
+  'auth/invalid-credential':
+    'El correo o la contraseña no son correctos.',
+  'auth/invalid-email': 'Escribe un correo válido.',
+  'auth/popup-blocked':
+    'El navegador bloqueó la ventana de Google. Permite ventanas emergentes e inténtalo nuevamente.',
+  'auth/popup-closed-by-user':
+    'La ventana de Google se cerró antes de completar el acceso.',
+  'auth/too-many-requests':
+    'Hay demasiados intentos. Espera unos minutos.',
+  'auth/unauthorized-domain':
+    'Este dominio todavía no está autorizado para iniciar sesión con Google.',
+  'auth/weak-password': 'La contraseña necesita al menos 6 caracteres.',
+};
+
+const getAuthErrorMessage = (error, fallback) =>
+  authErrorMessages[error?.code] || fallback;
+
 const AuthForm = ({ initialMode = 'login', successPath = '/app' }) => {
   const navigate = useNavigate();
   const {
@@ -53,19 +77,11 @@ const AuthForm = ({ initialMode = 'login', successPath = '/app' }) => {
       }
       handleSuccess();
     } catch (currentError) {
-      const errorMessages = {
-        'auth/email-already-in-use':
-          'Ese correo ya tiene una cuenta. Prueba iniciar sesión.',
-        'auth/invalid-credential':
-          'El correo o la contraseña no son correctos.',
-        'auth/invalid-email': 'Escribe un correo válido.',
-        'auth/weak-password': 'La contraseña necesita al menos 6 caracteres.',
-        'auth/too-many-requests':
-          'Hay demasiados intentos. Espera unos minutos.',
-      };
       setError(
-        errorMessages[currentError.code] ||
+        getAuthErrorMessage(
+          currentError,
           'No se pudo completar la solicitud. Inténtalo nuevamente.',
+        ),
       );
     } finally {
       setLoading(false);
@@ -81,7 +97,12 @@ const AuthForm = ({ initialMode = 'login', successPath = '/app' }) => {
       await loginWithGoogle();
       handleSuccess();
     } catch (currentError) {
-      setError(currentError.message || 'No se pudo entrar con Google.');
+      setError(
+        getAuthErrorMessage(
+          currentError,
+          'No se pudo entrar con Google. Inténtalo nuevamente.',
+        ),
+      );
     } finally {
       setLoading(false);
     }
